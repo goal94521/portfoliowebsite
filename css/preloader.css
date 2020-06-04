@@ -1,0 +1,25 @@
+
+body{
+	margin: 0;
+	width: 100vw;
+	height: 100vh;
+	overflow: hidden;
+}
+
+#preloader{ position: absolute; top: 0px; left: 0px; z-index: 1000; width: 100vw; height: 100vh; background-color: white; }
+
+.vertical-aligner{ width: 1px; height: 100vh; display: inline-block; vertical-align: middle; }
+
+.valigned{ display: inline-block; }
+
+#loading-text-container{ text-align: center; position: relative; }
+
+#loading-text{ font-family: 'Playfair Display', serif; font-size: 28px; position: absolute; top: 30vh; }
+
+#preloader-word { position: absolute; top: 40vh; }
+
+.absolute-centered{ left: 50%; transform: translateX(-50%); }
+
+#hand-image-container{ position: absolute; bottom: 2vh; min-height: 75px; transform: translateX(-25%) }
+
+.hand-image{ width: 50%; }
