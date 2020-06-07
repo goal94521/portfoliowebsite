@@ -207,7 +207,10 @@ Site.loadBannerImages = function(){
 
 Site.loadData = function(){
 	let lbp = this.loadBannerImages();
-	Promise.all([lbp]).then(() => this.initialize());
+	Promise.all([lbp]).then(() => {
+		Preloader.clear();
+		this.initialize();
+	});
 }
 
 Site.loadData();
