@@ -34,6 +34,7 @@
             <img id="hand-image-3" class="hand-image" src="resources/images/preloader/hand_3.png" style="display: none;"/>
             <img id="hand-image-4" class="hand-image" src="resources/images/preloader/hand_2.png" style="display: none;"/>
         </div>
+
     </div>
 
     <script type="text/javascript" src="js/preloader.js"></script>
@@ -42,6 +43,7 @@
     <script type="text/javascript" src="js/libs/gsap.min.js"> </script>
 
     <script type="text/javascript" src="js/utils.js"></script>
+    <script type="text/javascript" src="js/webgl/timelineController.js"></script>
     <script type="text/javascript" src="js/webgl/webGLUtils.js"></script>
     <script type="text/javascript" src="js/webgl/imageEffects.js"></script>
 
@@ -51,7 +53,324 @@
             <canvas id="top-banner-canvas">
                 
             </canvas>
+            <div class="designer-name" onclick="Site.checkAndTransitionToFront(event)">
+                KAYAKO KOBAYASHI
+            </div>
+            <div class="about">
+                ABOUT
+            </div>
+
+            <div class="stage-marker-container">
+                <div class="selection-dot" id="selection-dot">                    
+                </div>
+                <div class="stage-dot" id="stage-dot-0">                    
+                </div>
+                <div class="stage-dot" id="stage-dot-1">                    
+                </div>
+                <div class="stage-dot" id="stage-dot-2">                    
+                </div>
+                <div class="stage-dot" id="stage-dot-3">                    
+                </div>
+                <div class="stage-dot" id="stage-dot-4">                    
+                </div>
+                <div class="stage-dot" id="stage-dot-5">                    
+                </div>
+            </div>
         </div>
+
+        <!-- EDITORIAL SECTION -->
+        <div id="editorial-content" class="content-page" style="display: none;">
+            <div class="content-row">
+                <div class="half-width-image image-container">
+                    <img id="editorial_image_1_1" style="transform: translateY(500px);" src="resources/images/editorial/designkk_kayako_kobayashi_aesthete03.png" />                
+                </div>
+                <div class="half-width-image image-container">
+                    <img id="editorial_image_1_2" style="transform: translateY(800px);" src="resources/images/editorial/designkk_kayako_kobayashi_aesthete08.png" />
+                </div>
+            </div>
+            <div class="content-row">
+                <div class="half-width-image image-container">
+                    <img id="editorial_image_2_1" style="transform: translateY(800px);" src="resources/images/editorial/designkk_kayako_kobayashi_aesthete06.png" />
+                </div>
+                <div class="half-width-image image-container">
+                    <img id="editorial_image_2_2" style="transform: translateY(600px);" src="resources/images/editorial/designkk_kayako_kobayashi_aesthete05.png" />           
+                </div>                
+            </div>
+            
+            <div class="content-row">
+                <div class="half-width-image image-container">
+                    <img src="resources/images/editorial/designkk_kayako_kobayashi_aesthete09.png" />
+                </div>
+                <div class="half-width-image image-container">               
+                    <img src="resources/images/editorial/designkk_kayako_kobayashi_aesthete02.png" />
+                </div>
+            </div>          
+
+            <div class="content-row">
+                <div class="full-width-image image-container">
+                    <img src="resources/images/editorial/designkk_kayako_kobayashi_aesthete01@2x.png" />                
+                </div>
+            </div>
+
+            <div class="content-row two-columns">
+                <div class="column image-container">
+                    <img class="full-width-image" src="resources/images/editorial/aesthete01.png" />                
+                </div>
+                <div class="column image-container">
+                    <img class="full-width-image" src="resources/images/editorial/aesthete-1.png" />                                    
+                </div>
+            </div>
+
+            <div class="content-row">
+                <div class="centered image-container">
+                    <img src="resources/images/editorial/CkSHIf_UkAAPBYe.png" />                
+                </div>
+            </div>
+
+            <div class="content-row">
+                <div class="half-width-image image-container">
+                    <img src="resources/images/editorial/designkk_kayako_kobayashi_ralphlauren01.png" />
+                </div>
+                <div class="half-width-image image-container">               
+                    <img src="resources/images/editorial/designkk_kayako_kobayashi_ralphlauren02.png" />
+                </div>
+            </div>          
+
+            <div class="content-row">
+                <div class="full-width-image image-container">
+                    <img src="resources/images/editorial/designkk_kayako_kobayashi_rlmagazine01.png" />                
+                </div>
+            </div>
+
+        </div>
+
+        <!-- E-COMMERCE SECTION -->
+        <div id="ecommerce-content" style="display: none;">
+            <div class="content-row">
+                <div class="full-width-image image-container">
+                    <img id="ecommerce_image_1_1" src="resources/images/ecommerce/designkk_kayako_kobayashi_coach01.png" />
+                </div>              
+            </div>
+
+           <div class="content-row">
+                <div class="half-width-image image-container">
+                    <img src="resources/images/ecommerce/designkk_kayako_kobayashi_coach02.png" />
+                </div>
+                <div class="half-width-image image-container">               
+                    <img src="resources/images/ecommerce/designkk_kayako_kobayashi_coach03.png" />
+                </div>
+            </div>          
+
+            <div class="content-row">
+                <div class="centered image-container">
+                    <img src="resources/images/ecommerce/designkk_kayako_kobayashi_joefresh02.png" />                
+                </div>
+            </div>
+
+            <div class="content-row">
+                <div class="centered image-container">
+                    <img src="resources/images/ecommerce/designkk_kayako_kobayashi_nancygonzalez-fall03.png" />                
+                </div>
+            </div>
+
+            <div class="content-row">
+                <div class="centered image-container">
+                    <img src="resources/images/ecommerce/designkk_kayako_kobayashi_joefresh_ecommerce02.png" />                
+                </div>
+            </div>
+
+            <div class="content-row">
+                <div class="half-width-image image-container">
+                    <img id="" src="resources/images/ecommerce/designkk_kayako_kobayashi_joefresh_ecommerce03.png" />
+                </div>
+                <div class="half-width-image image-container">               
+                    <img src="resources/images/ecommerce/designkk_kayako_kobayashi_joefresh01.png" />
+                </div>
+            </div>          
+
+            <div class="content-row">
+                <div class="half-width-image image-container">
+                    <img src="resources/images/ecommerce/designkk_kayako_kobayashi_isaacmizrahi05.png" />
+                </div>
+                <div class="half-width-image image-container">               
+                    <img src="resources/images/ecommerce/designkk_kayako_kobayashi_isaacmizrahi06 copy.png" />
+                </div>
+            </div>          
+
+            <div class="content-row">
+                <div class="centered image-container">
+                    <img src="resources/images/ecommerce/designkk_kayako_kobayashi_culturehome02.png" />                
+                </div>
+            </div>
+
+            <div class="content-row two-columns">
+                <div class="column image-container">
+                    <div class="full-width-image">
+                        <img src="resources/images/ecommerce/designkk_kayako_kobayashi_colehaan01.png" />                                    
+                    </div>
+                    <div class="full-width-image">
+                        <img src="resources/images/ecommerce/designkk_kayako_kobayashi_assouline01.png" />                                    
+                    </div>
+                </div>
+                <div class="column image-container">
+                    <div class="full-width-image">
+                        <img src="resources/images/ecommerce/designkk_kayako_kobayashi_joefresh04.png" />                                    
+                    </div>            
+                </div>
+            </div>
+
+            <div class="content-row">
+                <div class="centered image-container">
+                    <img src="resources/images/ecommerce/designkk_kayako_kobayashi_ripka.png" />                
+                </div>
+            </div>
+
+            <div class="content-row">
+                <div class="centered image-container">
+                    <img src="resources/images/ecommerce/designkk_ecommerce.png" />                
+                </div>
+            </div>
+
+            <div class="content-row">
+                <div class="centered image-container">
+                    <img src="resources/images/ecommerce/designkk_kayako_kobayashi_katespade01.png" />                
+                </div>
+            </div>
+
+        </div>
+
+        <!-- AGENCY SECTION -->
+        <div id="agency-content" style="display: none;">
+
+            <div class="content-row">
+                <div class="centered image-container">
+                    <img src="resources/images/agency/halo_home.png" />                
+                </div>
+            </div>
+
+
+
+        </div>
+
+        <!-- JEWELRY SECTION -->
+        <div id="jewelry-content" style="display: none;">
+
+            <div class="content-row">
+                <div class="centered image-container">
+                    <img src="resources/images/jewelry/Judithripka.png" />                
+                </div>
+            </div>
+
+            <div class="content-row two-columns">
+                <div class="column image-container">
+                    <div class="full-width-image">
+                        <img src="resources/images/jewelry/designkk_kayako_kobayashi_ripka.png" />                                    
+                    </div>
+                    <div>
+                        <div class="half-width-image">
+                            <img src="resources/images/jewelry/ripka_insta03.png" />                                                            
+                        </div>
+                        <div class="half-width-image">
+                            <img src="resources/images/jewelry/ripka_insta02.png" />                                                                                        
+                        </div>
+                    </div>
+                    <div class="full-width-image">
+                        <img src="resources/images/jewelry/designkk_kayako_kobayashi_peridotfinejewelry02.png" />                                    
+                    </div>
+                </div>
+                <div class="column image-container">
+                    <div class="full-width-image">
+                        <img src="resources/images/jewelry/ripka_insta01.png" />                                    
+                    </div>
+
+                    <div class="full-width-image">
+                        <img src="resources/images/jewelry/designkk_kayako_kobayashi_peridotfinejewelry01.png" />                                    
+                    </div>
+
+                </div>
+            </div>                   
+        </div>
+
+        <!-- BEAUTY SECTION -->
+        <div id="beauty-content" style="display: none;">
+            <div class="content-row">
+                <div class="centered image-container">
+                    <img src="resources/images/beauty/Canvas.png" />                
+                </div>
+            </div>
+
+            <div class="content-row">
+                <div class="centered image-container">
+                    <img src="resources/images/beauty/designkk_kayako_kobayashi_elementx04.png" />                
+                </div>
+            </div>
+
+            <div class="content-row">
+                <div class="centered image-container">
+                    <img src="resources/images/beauty/designkk_kayako_kobayashi_isaacmizrahi_truebeauty02.png" />                
+                </div>
+            </div>
+
+            <div class="content-row">
+                <div class="centered image-container">
+                    <img src="resources/images/beauty/kiehls_banner.png" />                
+                </div>
+            </div>
+
+            <div class="content-row">
+                <div class="centered image-container">
+                    <img src="resources/images/beauty/designkk_kayako_kobayashi_kiehls06.png" />                
+                </div>
+            </div>
+
+            <div class="content-row">
+                <div class="centered image-container">
+                    <img src="resources/images/beauty/origins_banner.png" />                
+                </div>
+            </div>
+
+            <div class="content-row">
+                <div class="centered image-container">
+                    <img src="resources/images/beauty/origins.png" />                
+                </div>
+            </div>
+
+        </div>
+
+        <!-- UX SECTION -->
+        <div id="ux-content" style="display: none;">
+
+            <div class="centered">
+                <div class="left-aligned ux-text-container">
+                    <span class="ux-large-text">e.comm-based interior design store</span>                
+                </div>
+            </div>
+
+            <div class="centered ux-small-text">
+                <div class="left-aligned ux-text-container">
+                    <ul>
+                        <li>New Navigation</li>
+                        <li>New wholesale vendors & guests site that is easy to understand to all users.</li>
+                        <li>Create a site that allows the user (mainly Interior Designers) to draft, design, shop, filter, and present through wish list which can be shared with their client as “concept” without the wholesale price and technical details. It also simultaneously links to 3D Virtual Interior Design App</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="content-row">
+                <div class="centered image-container">
+                    <img src="resources/images/ux/kathykuo_ux.png" />                
+                </div>
+            </div>
+
+            <!--
+            <div class="content-row">
+                <div class="centered image-container">
+                    <img src="resources/images/ux/kathykuo_ux.png" />                
+                </div>
+            </div>
+            -->
+        </div>
+
     </div>
 </body>
 

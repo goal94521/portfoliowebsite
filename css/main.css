@@ -1,6 +1,70 @@
 
+@font-face {
+    font-family: SVNGilroyLight;
+    src: url(fonts/SVNGilroyLight.otf);
+    font-display: block;
+}
+
+@font-face {
+    font-family: PlayfairDisplay;
+    src: url(fonts/PlayfairDisplay-VariableFont_wght.ttf);
+    font-display: block;
+}
+
+.top-banner{
+	height: 100vh;
+}
 
 #top-banner-canvas{
 	cursor: pointer;
 }	
+
+.designer-name{
+	position: fixed;
+	z-index: 10;
+	top: 3vw;
+	left: 3vw;
+	font-size: 30px;
+	font-family: 'SVNGilroyLight';
+	cursor: pointer;
+}
+
+.about{
+	position: fixed;
+	z-index: 10;
+	right: 3vw;
+	top: 3vw;
+	font-size: 30px;
+	font-family: 'SVNGilroyLight';
+}
+
+.stage-marker-container{
+	position: absolute;
+	bottom: 3vw;
+	left: 3vw;
+}
+
+.stage-dot{ background-color: black; border-radius: 50%; width: 5px; height: 5px; margin: 10px; display: inline-block; }
+
+.selection-dot{ border: 1px solid black; width: 15px; height: 15px; position: absolute; left: 4px; top: 4px; border-radius: 50%; }
+
+.content-row{ margin-left: 5vw; margin-right: 5vw; }
+
+.image-container{ padding: 40px; box-sizing: border-box; }
+
+.half-width-image{ width: calc(50% - 2px); display: inline-block; vertical-align: top; }
+.half-width-image img{ width: calc(100% - 0px); }
+
+.full-width-image{ width: 100%; }
+.full-width-image img{ width: calc(100% - 0px); }
+
+.centered { text-align: center; }
+.left-aligned { text-align: left; }
+
+.column{ display: inline-block; }
+.two-columns div.column{ width: 49%; }
+
+.ux-large-text{ font-family: 'PlayfairDisplay'; font-size: 60px; }
+.ux-small-text{ font-family: 'SVNGilroyLight'; font-size: 30px; }
+.ux-text-container{ width: 60%; margin: auto; margin-top: 20px; margin-bottom: 20px; }
 

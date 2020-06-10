@@ -259,6 +259,10 @@ Utils.lerp = function(startX, endX, interX, startY, endY){
     return Utils.linearInterpolation(startY, endY, interX, startX, endX);
 }
 
+Utils.slerp = function(start, end, t){
+    return Utils.linearInterpolation(0, 1, t, start, end);
+}
+
 Utils.linearInterpolation = function(startX, endX, interY, startY, endY){
     var yInterval = endY - startY;
     var fraction = (interY - startY) / yInterval;
