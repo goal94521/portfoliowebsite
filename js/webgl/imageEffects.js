@@ -9,6 +9,15 @@ let Site = {
 	mouseDown: false,
 	dragged: false,
 	distortIntensity: 0.5,
+	bannerTween: null,
+	SNAP_TIME: 1.2,
+	WHEEL_ANIM_INCREASE: 0.15,
+	WHEEL_ANIM_TIME: 0.35,
+	WHEEL_ANIM_CAP_TIME: 1,
+	steadyBanner: true,
+	targetBannerWheel: 0,
+	lastSnappedImage: null,
+	zoom: 1,
 };
 
 Site.state = Site.StateEnum.FRONT_SCREEN; // todo change to preloader
@@ -48,6 +57,8 @@ Site.requestLoop = function(){
 }
 
 Site.loop = function(timestamp){
+	this.calculateWordRotation();
+	this.calculateImagePositions();
 
 	// markers management
 	this.setSelectionDotsOpacity();
@@ -62,17 +73,51 @@ Site.initializeBanner = function(){
 	this.offscreenCanvas = document.createElement('canvas');
 	this.offscreenContext = this.offscreenCanvas.getContext('2d');
 
+	this.setCanvasSize();
+
 	// initializeImage positions
-	let x = 0;
-	for (let i = 0; i < this.bannerImages.length; i++){
-		this.bannerImages[i].x = x;
-		x += this.bannerImages[i].image.width;
-	}
+	this.initializeImagePositions();
+	this.centerImage(this.bannerImages[0]);
+
+	this.lastSnappedImage = this.bannerImages[0];
 
 	this.moveBanner(0);
 }
 
-Site.setCanvasSize = function(argument) {
+Site.getCanvasWidth = function(){
+	return this.offscreenCanvas.width;
+}
+
+Site.initializeImagePositions = function(){
+	let x = 0;
+	const canvasWidth = this.getCanvasWidth();
+	for (let i = 0; i < this.bannerImages.length; i++){
+		this.bannerImages[i].x = x;
+		x += canvasWidth;
+	}
+}
+
+Site.getImageIndex = function(bimg){
+	return this.bannerImages.indexOf(bimg);
+}
+
+Site.centerImage = function(centerImage){
+	let centerIndex = this.getImageIndex(centerImage);
+	let half = Math.floor(this.bannerImages.length / 2);
+
+	let centerx = centerImage.x;
+	const canvasWidth = this.getCanvasWidth();
+	for (let i = 1; i <= half; i++){
+		let bimg = this.bannerImages[(centerIndex + i) % this.bannerImages.length];
+		bimg.x = centerx + i * canvasWidth;
+	}
+	for (let i = 1; i <= half; i++){
+		let bimg = this.bannerImages[(centerIndex - i + this.bannerImages.length) % this.bannerImages.length];
+		bimg.x = centerx - i * canvasWidth;
+	}
+}
+
+Site.setCanvasSize = function() {
 	this.offscreenCanvas.width = window.innerWidth;
 	this.offscreenCanvas.height = window.innerHeight;
 
@@ -84,12 +129,40 @@ Site.getBannerWidth = function(){
 	return this.bannerCanvas.width * this.bannerImages.length;
 }
 
+Site.distanceToImage = function(bimg){
+	return Math.abs(-this.bannerCamera.x - bimg.x);
+}
+
+Site.setShear = function(){
+	let minShear = 0;
+	let maxShear = 0.07;
+	let shearX = Utils.lerp(0, this.offscreenCanvas.width / 2, this.distanceToImage(this.lastSnappedImage), 
+		minShear, maxShear);
+
+	this.offscreenContext.transform(1, 0, shearX, 1, 0, 0);
+}
+
 Site.render2DCanvas = function(){
+	// set shear
+	this.offscreenContext.save();
+	this.setShear();
+
 	for (let i = 0; i < this.bannerImages.length; i++){
+		this.offscreenContext.save();
+		this.offscreenContext.translate(this.offscreenCanvas.width / 2, this.offscreenCanvas.height / 2);
+		this.offscreenContext.scale(this.zoom, this.zoom);
+		this.offscreenContext.translate(-this.offscreenCanvas.width / 2, -this.offscreenCanvas.height / 2);
+
 		let bimg = this.bannerImages[i];
-		let dimensions = Utils.resizeImage(bimg.image, this.offscreenCanvas.width, this.offscreenCanvas.height, true);
-		this.offscreenContext.drawImage(bimg.image, bimg.x + this.bannerCamera.x, 0, dimensions.width, dimensions.height);
+		let targetWidth = this.offscreenCanvas.width;
+		let targetHeight = this.offscreenCanvas.height;
+		let dimensions = Utils.resizeImage(bimg.image, targetWidth, targetHeight, true);
+		let xcoord = bimg.x + this.bannerCamera.x;		
+		this.offscreenContext.drawImage(bimg.image, xcoord, 0, dimensions.width, dimensions.height);
+		
+		this.offscreenContext.restore();
 	}
+	this.offscreenContext.restore();
 	this.drawSectionName();
 }
 
@@ -97,7 +170,7 @@ Site.getImageCenterX = function(bimg){
 	return bimg.x + bimg.image.width / 2;
 }
 
-Site.getCurrentImage = function(){
+Site.calculateCurrentImage = function(){
 	let minDist = Infinity;
 	let closest = null;
 	for (let i = 0; i < this.bannerImages.length; i++){
@@ -128,7 +201,7 @@ Site.getBannerWebGLShader = function(){
     	varying vec2 texCoords;
     	uniform sampler2D uTexture;
 
-    	uniform vec2 distorts[3];
+    	uniform vec2 distorts[6];
     	uniform float disttest;
     	uniform float intensity;
 
@@ -159,7 +232,7 @@ Site.getBannerWebGLShader = function(){
     	void main() {
     		vec4 color = texture2D(uTexture, texCoords);
 
-    		for (int i = 0; i < 3; i++){
+    		for (int i = 0; i < 6; i++){
 				float dist = distance(distorts[i], texCoords);
 	    		if (dist < disttest){
 	    			color = displace(uTexture, texCoords, disttest - dist, intensity);
@@ -206,13 +279,36 @@ Site.renderWebGLBanner = function(){
 
   	WebGLUtils.applyShader(this.offscreenCanvas, this.bannerCanvas, 
   		shaders.vert, shaders.frag, gl, 
-  		[{ type: gl.FLOAT_VEC2, name: "distorts", value: [0.5, 0.5, 0.2, 0.2, 0.4, 0.9]}, { type: gl.FLOAT, name: "disttest", value: 0.1 }, 
+  		[{ type: gl.FLOAT_VEC2, name: "distorts", value: [0.5, 0.5, 0.2, 0.2, 0.4, 0.9, 0.2, 0.4, 0.1, 0.8, 0.8, 0.5]}, { type: gl.FLOAT, name: "disttest", value: 0.1 }, 
   		{ type: gl.FLOAT, name: "intensity", value: this.distortIntensity }]);
 }
 
 Site.captureMousePosition = function(event){
 	this.mousePosition.x = event.clientX;
 	this.mousePosition.y = event.clientY;
+
+	this.setZoomLevel();
+}
+
+Site.setZoomLevel = function(){
+	let ySize = this.offscreenCanvas.height * 0.2;
+	let xSize = this.offscreenCanvas.width * 0.7;
+
+	let minY = this.offscreenCanvas.height / 2 - ySize / 2;
+	let maxY = this.offscreenCanvas.height / 2 + ySize / 2;
+
+	let minX = this.offscreenCanvas.width / 2 - xSize / 2;
+	let maxX = this.offscreenCanvas.width / 2 + xSize / 2;
+
+	/*
+	if (this.mousePosition.y > minY && this.mousePosition.y < maxY &&
+		this.mousePosition.x > minX && this.mousePosition.x < maxX){
+
+		if (this.zoomTween){
+			this.zoomTween.kill();
+		}
+		this.zoomTween = gsap.to(this, { duration: 0.5, zoomLevel:  });
+	}*/
 }
 
 Site.onmousemove = function(event){
@@ -221,34 +317,88 @@ Site.onmousemove = function(event){
 	if (this.mouseDown && this.state == this.StateEnum.FRONT_SCREEN){
 		let deltaX = this.mousePosition.x - oldX;
 		this.dragged = true;
+		this.steadyBanner = false;
 		this.moveBanner(deltaX);
 	}
 }
 
+Site.moveBannerWheel = function(deltaX){
+	// moves banner but with mouse wheel, triggering tween
+	this.targetBannerWheel += deltaX;
+	this.successiveWheels++;
+	this.killBannerTweens();
+
+	const duration = Math.min(this.WHEEL_ANIM_TIME + this.successiveWheels * this.WHEEL_ANIM_INCREASE, this.WHEEL_ANIM_CAP_TIME);
+
+	this.wheelBannerTween = gsap.to(this.bannerCamera, { duration: this.WHEEL_ANIM_TIME, x: (this.bannerCamera.x + this.targetBannerWheel), ease: Quad.EaseInOut });
+	this.wheelBannerTween.eventCallback('onComplete', () => {
+		this.successiveWheels = 0;
+		this.targetBannerWheel = 0;
+		this.wheelBannerTween = null;
+		this.snapBannerToClosest();
+	});
+}
+
+Site.killBannerTweens = function(){
+	if (this.wheelBannerTween){
+		this.wheelBannerTween.kill();
+		this.wheelBannerTween = null;
+	}
+	if (this.bannerTween){
+		this.bannerTween.kill();
+		this.bannerTween = null;
+	}
+
+}
 Site.moveBanner = function(deltaX){
 	this.bannerCamera.x += deltaX;
-	this.calculateWordRotation();
+}
+
+Site.calculateImagePositions = function(){
+	let image = this.calculateCurrentImage();
+	this.centerImage(image);
 }
 
 Site.calculateWordRotation = function() {
 	this.wordRotation = this.wordRotationOffset + this.bannerCamera.x * this.wordRotationSpeed;
 }
 
+Site.snapBannerToClosest = function(){
+	let image = this.calculateCurrentImage();
+	this.lastSnappedImage = image;
+	this.bannerTween = gsap.to(this.bannerCamera, { duration: this.SNAP_TIME, x: -image.x, ease: "elastic.out(1,0.6)" });
+	this.bannerTween.eventCallback('onComplete', function(){
+		Site.steadyBanner = true;
+	});
+}
+
 Site.onmouseup = function(event){
 	this.captureMousePosition(event);
 	this.mouseDown = false;
+
+	// trigger snapping
+	if (this.state == this.StateEnum.FRONT_SCREEN){
+		this.snapBannerToClosest();
+	}
 }
 
 Site.onmousedown = function(event){
 	this.captureMousePosition(event);
 	this.mouseDown = true;
 	this.dragged = false;
+
+	if (this.state == this.StateEnum.FRONT_SCREEN){
+		if (this.bannerTween){
+			this.bannerTween.kill();
+			this.bannerTween = null;
+		}	
+	}
 }
 
 Site.onmousewheel = function(event){
 	switch (this.state){
 		case this.StateEnum.FRONT_SCREEN:
-			this.moveBanner(event.deltaY);
+			this.moveBannerWheel(event.deltaY / 4);
 			break;
 		case this.StateEnum.CONTENT_SCREEN:
 			this.advanceTimeline(event.deltaY);
@@ -262,9 +412,8 @@ Site.advanceTimeline = function(t){
 }
 
 Site.onclick = function(event){
-	// add: if (this.overSteadyImage)
-	if (this.state == this.StateEnum.FRONT_SCREEN && !this.dragged){
-		let image = this.getCurrentImage();
+	if (this.state == this.StateEnum.FRONT_SCREEN && this.steadyBanner){
+		let image = this.calculateCurrentImage();
 		this.transitionToContent(image);
 	}
 }
