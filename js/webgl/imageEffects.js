@@ -1,6 +1,7 @@
 
 let Site = {
 	StateEnum: { PRELOADER: 1, FRONT_SCREEN: 2, CONTENT_SCREEN: 3},
+	BannerStateEnum: { WAIT_MOVE: 0, STEADY: 1, DRAGGING: 2, MOVING_NEXT: 3, IMAGE_PREVIEW: 4, IMAGE_PREVIEW_TRANSITION: 5 },
 	bannerCanvas: null,
 	offscreenCanvas: null,
 	offscreenContext: null,
@@ -10,7 +11,9 @@ let Site = {
 	dragged: false,
 	distortIntensity: 0.5,
 	bannerTween: null,
+	bannerState: 0,
 	SNAP_TIME: 1.2,
+	SNAP_TIME_PREVIEW: 2,
 	WHEEL_ANIM_INCREASE: 0.15,
 	WHEEL_ANIM_TIME: 0.35,
 	WHEEL_ANIM_CAP_TIME: 1,
@@ -18,10 +21,18 @@ let Site = {
 	targetBannerWheel: 0,
 	lastSnappedImage: null,
 	zoom: 1,
+	zoomTarget: 1,
+	zoomTween: false,
+	MIN_ZOOM: 1,
+	MAX_ZOOM: 1.05,
+	imagePreviewShear: 0,
+	imagePreviewTargetShear: 0,
+	imagePreviewShearAmount: 0.4,
+	time: 0,
+	lastTimestamp: 0
 };
 
 Site.state = Site.StateEnum.FRONT_SCREEN; // todo change to preloader
-
 
 Site.wordRotationOffset = 4.35;
 Site.wordRotationSpeed = 1 / 2600;
@@ -57,6 +68,11 @@ Site.requestLoop = function(){
 }
 
 Site.loop = function(timestamp){
+	this.time += (timestamp - this.lastTimestamp) / 1000;
+	this.lastTimestamp = timestamp;
+
+	this.calculateImagePreview();
+
 	this.calculateWordRotation();
 	this.calculateImagePositions();
 
@@ -66,6 +82,44 @@ Site.loop = function(timestamp){
 	
 	this.renderBanner(timestamp);
 	this.requestLoop();
+}
+
+// calculate animation for when holding the mouse on the sides of the screen
+Site.calculateImagePreview = function(){
+	let withinCollisionArea = this.mousePosition.x > this.offscreenCanvas.width * 0.95 ||
+				this.mousePosition.x < this.offscreenCanvas.width * 0.05;
+	switch (this.bannerState){
+		case this.BannerStateEnum.STEADY:
+			if (withinCollisionArea){
+				// should transition to image preview
+				this.killImagePreviewTween();
+				this.imagePreviewTargetShear = this.imagePreviewShearAmount;
+				if (this.mousePosition.x > this.offscreenCanvas.width * 0.95)
+					this.imagePreviewTargetShear *= -1;
+
+				this.bannerState = this.BannerStateEnum.IMAGE_PREVIEW;
+				this.imagePreviewTween = gsap.to(this, { duration: 0.4, imagePreviewShear: this.imagePreviewTargetShear })
+			}	
+			break;
+		case this.BannerStateEnum.IMAGE_PREVIEW:
+			if (!withinCollisionArea){
+				this.killImagePreviewTween();
+				this.bannerState = this.BannerStateEnum.IMAGE_PREVIEW_TRANSITION;
+				this.imagePreviewTween = gsap.to(this, { duration: 0.8, imagePreviewShear: 0, ease: "elastic.out(1, 0.5)" });				
+				this.imagePreviewTween.eventCallback("onComplete", () => {
+					if (this.bannerState == this.BannerStateEnum.IMAGE_PREVIEW_TRANSITION){
+						this.bannerState = this.BannerStateEnum.STEADY;
+					}
+				});
+			}
+			break;
+	}
+}
+
+Site.killImagePreviewTween = function(){
+	if (this.imagePreviewTween){
+		this.imagePreviewTween.kill();
+	}
 }
 
 Site.initializeBanner = function(){
@@ -82,6 +136,8 @@ Site.initializeBanner = function(){
 	this.lastSnappedImage = this.bannerImages[0];
 
 	this.moveBanner(0);
+
+	this.bannerState = this.BannerStateEnum.WAIT_MOVE;
 }
 
 Site.getCanvasWidth = function(){
@@ -134,12 +190,20 @@ Site.distanceToImage = function(bimg){
 }
 
 Site.setShear = function(){
-	let minShear = 0;
-	let maxShear = 0.07;
-	let shearX = Utils.lerp(0, this.offscreenCanvas.width / 2, this.distanceToImage(this.lastSnappedImage), 
-		minShear, maxShear);
-
-	this.offscreenContext.transform(1, 0, shearX, 1, 0, 0);
+	let shearX = 0;
+	switch (this.bannerState){
+		case this.BannerStateEnum.STEADY:
+			let minShear = 0;
+			let maxShear = 0.07;
+			shearX = Utils.lerp(0, this.offscreenCanvas.width / 2, this.distanceToImage(this.lastSnappedImage), 
+				minShear, maxShear);
+			break;
+		case this.BannerStateEnum.IMAGE_PREVIEW:
+		case this.BannerStateEnum.IMAGE_PREVIEW_TRANSITION:
+			shearX = this.imagePreviewShear;
+			break;
+	}
+	this.offscreenContext.transform(1, 0, shearX, 1, 0, 0);		
 }
 
 Site.render2DCanvas = function(){
@@ -202,26 +266,10 @@ Site.getBannerWebGLShader = function(){
     	uniform sampler2D uTexture;
 
     	uniform vec2 distorts[6];
+
     	uniform float disttest;
     	uniform float intensity;
-
-    	vec4 blur(sampler2D uTexture, vec2 vUV){
-      		vec2 offs_blur = vec2(0.005, 0.005);
-      		vec4 color = texture2D(uTexture, vUV + vec2(         0.0,          0.0))*0.25;   
-
-			color += texture2D(uTexture, vUV + vec2(-offs_blur.x, -offs_blur.y))*0.0625;
-			color += texture2D(uTexture, vUV + vec2(         0.0, -offs_blur.y))*0.125;  
-			color += texture2D(uTexture, vUV + vec2( offs_blur.x, -offs_blur.y))*0.0625;
-
-			color += texture2D(uTexture, vUV + vec2(-offs_blur.x,          0.0))*0.125;
-			color += texture2D(uTexture, vUV + vec2( offs_blur.x,          0.0))*0.125;  
-
-			color += texture2D(uTexture, vUV + vec2(-offs_blur.x, offs_blur.y))*0.0625;
-			color += texture2D(uTexture, vUV + vec2(         0.0, offs_blur.y))*0.125;   
-			color += texture2D(uTexture, vUV + vec2( offs_blur.x, offs_blur.y))*0.0625; 
-
-      		return color;
-    	}
+    	uniform float time;
 
     	vec4 displace(sampler2D uTexture, vec2 vUV, float dst, float intensity){
     		vUV.x += dst * intensity;
@@ -236,19 +284,16 @@ Site.getBannerWebGLShader = function(){
 				float dist = distance(distorts[i], texCoords);
 	    		if (dist < disttest){
 	    			color = displace(uTexture, texCoords, disttest - dist, intensity);
-	    			/*
-		      		float warmth = 0.4;
-		      		float brightness = 0.0;
-		      		color.r += warmth;
-		      		color.b -= warmth;
-		      		color.rgb += brightness;
-		      		*/
-	    		}else{
-					//color = blur(uTexture, texCoords);
 	    		}
     		}
 
-    		
+    		for (int i = 0; i < 1; i++){
+				float dist = abs(distorts[i].x - texCoords.x);
+	    		if (dist < disttest){
+	    			float intens = sin(10.0 * texCoords.y + time);
+	    			color = displace(uTexture, texCoords, disttest - dist, intens);
+	    		}
+    		}
 		
       		gl_FragColor = color;
 		}
@@ -258,7 +303,7 @@ Site.getBannerWebGLShader = function(){
 }
 
 Site.renderBanner = function(timestamp){
-	this.distortIntensity = 0.4 * Math.sin(timestamp / 2000);
+	this.distortIntensity = 1 * Math.sin(timestamp / 2000);
 	this.setCanvasSize();
 	
 	this.render2DCanvas();
@@ -279,15 +324,22 @@ Site.renderWebGLBanner = function(){
 
   	WebGLUtils.applyShader(this.offscreenCanvas, this.bannerCanvas, 
   		shaders.vert, shaders.frag, gl, 
-  		[{ type: gl.FLOAT_VEC2, name: "distorts", value: [0.5, 0.5, 0.2, 0.2, 0.4, 0.9, 0.2, 0.4, 0.1, 0.8, 0.8, 0.5]}, { type: gl.FLOAT, name: "disttest", value: 0.1 }, 
-  		{ type: gl.FLOAT, name: "intensity", value: this.distortIntensity }]);
+  		[
+  			{ type: gl.FLOAT_VEC2, name: "distorts", value: [0.5, 0.5, 0.2, 0.2, 0.4, 0.9, 0.2, 0.4, 0.1, 0.8, 0.8, 0.5]}, { type: gl.FLOAT, name: "disttest", value: 0.1 }, 
+  			{ type: gl.FLOAT, name: "intensity", value: this.distortIntensity },
+  			{ type: gl.FLOAT, name: "time", value: this.time }
+  		]);
 }
 
 Site.captureMousePosition = function(event){
 	this.mousePosition.x = event.clientX;
 	this.mousePosition.y = event.clientY;
 
-	this.setZoomLevel();
+	if (this.bannerState == this.BannerStateEnum.WAIT_MOVE)
+		this.bannerState = this.BannerStateEnum.STEADY;
+
+	if (this.state == this.StateEnum.FRONT_SCREEN)
+		this.setZoomLevel();
 }
 
 Site.setZoomLevel = function(){
@@ -300,15 +352,28 @@ Site.setZoomLevel = function(){
 	let minX = this.offscreenCanvas.width / 2 - xSize / 2;
 	let maxX = this.offscreenCanvas.width / 2 + xSize / 2;
 
-	/*
-	if (this.mousePosition.y > minY && this.mousePosition.y < maxY &&
-		this.mousePosition.x > minX && this.mousePosition.x < maxX){
+	let withinZoomRange = this.mousePosition.y > minY && this.mousePosition.y < maxY &&
+		this.mousePosition.x > minX && this.mousePosition.x < maxX;
 
+	let zoomChanged = false;
+	if (withinZoomRange){
+		if (this.zoomTarget == this.MIN_ZOOM){
+			zoomChanged = true;
+			this.zoomTarget = this.MAX_ZOOM;
+		}
+	}else{
+		// outsize zoom area
+		if (this.zoomTarget == this.MAX_ZOOM){ // should zoom out
+			zoomChanged = true;
+			this.zoomTarget = this.MIN_ZOOM;
+		}
+	}
+	if (zoomChanged){
 		if (this.zoomTween){
 			this.zoomTween.kill();
 		}
-		this.zoomTween = gsap.to(this, { duration: 0.5, zoomLevel:  });
-	}*/
+		this.zoomTween = gsap.to(this, { duration: 0.7, zoom: this.zoomTarget, ease: Quad.EaseInOut });
+	}
 }
 
 Site.onmousemove = function(event){
@@ -363,13 +428,18 @@ Site.calculateWordRotation = function() {
 	this.wordRotation = this.wordRotationOffset + this.bannerCamera.x * this.wordRotationSpeed;
 }
 
-Site.snapBannerToClosest = function(){
-	let image = this.calculateCurrentImage();
+Site.snapBannerToImage = function(image, fromPreview){
+	let duration = fromPreview? this.SNAP_TIME_PREVIEW : this.SNAP_TIME;
 	this.lastSnappedImage = image;
-	this.bannerTween = gsap.to(this.bannerCamera, { duration: this.SNAP_TIME, x: -image.x, ease: "elastic.out(1,0.6)" });
+	this.bannerTween = gsap.to(this.bannerCamera, { duration: duration, x: -image.x, ease: "elastic.out(1,0.6)" });
 	this.bannerTween.eventCallback('onComplete', function(){
 		Site.steadyBanner = true;
 	});
+}
+
+Site.snapBannerToClosest = function(){
+	let image = this.calculateCurrentImage();
+	this.snapBannerToImage(image);
 }
 
 Site.onmouseup = function(event){
@@ -412,9 +482,25 @@ Site.advanceTimeline = function(t){
 }
 
 Site.onclick = function(event){
-	if (this.state == this.StateEnum.FRONT_SCREEN && this.steadyBanner){
-		let image = this.calculateCurrentImage();
-		this.transitionToContent(image);
+	switch (this.state){
+		case this.StateEnum.FRONT_SCREEN:
+			switch (this.bannerState){
+				case this.BannerStateEnum.STEADY:
+					if (this.steadyBanner){ // maybe should remove
+						let image = this.calculateCurrentImage();
+						this.transitionToContent(image);
+					}
+					break;
+				case this.BannerStateEnum.IMAGE_PREVIEW:
+					let image = this.calculateCurrentImage();
+					let index = this.getImageIndex(image);
+					let nextIndex = (index + 1 + this.bannerImages.length) % this.bannerImages.length;
+					let newImage = this.bannerImages[nextIndex];
+					this.snapBannerToImage(newImage, true);
+					this.bannerState = this.BannerStateEnum.STEADY;
+					break;
+			}
+			break;
 	}
 }
 

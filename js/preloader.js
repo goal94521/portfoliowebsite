@@ -20,7 +20,7 @@ Preloader.intervalId = setInterval(function(){
 Preloader.clear = function(){
 	clearInterval(Preloader.intervalId);
 
-	gsap.to('#preloader', 2, { top: "-100vh" });
+	gsap.to('#preloader', 0.7, { top: "-100vh", ease: Quad.EaseOut });
 }
 
 
