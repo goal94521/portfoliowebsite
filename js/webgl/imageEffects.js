@@ -3,13 +3,19 @@ let Site = {
 	StateEnum: { PRELOADER: 1, FRONT_SCREEN: 2, CONTENT_SCREEN: 3},
 	BannerStateEnum: { WAIT_MOVE: 0, STEADY: 1, DRAGGING: 2, MOVING_NEXT: 3, IMAGE_PREVIEW: 4, IMAGE_PREVIEW_TRANSITION: 5 },
 	bannerCanvas: null,
+	bannerContext: null,
+	webGLCanvas: null,
 	offscreenCanvas: null,
 	offscreenContext: null,
 	currentContent: null,
 	mousePosition: { x: -1000, y: -1000 },
 	mouseDown: false,
 	dragged: false,
-	distortIntensity: 0.5,
+	distortIntensity: 0,
+	MIN_DISTORT_INTENSITY: 0,
+	MAX_DISTORT_INTENSITY: 1,
+	maxDistortions: 6,
+	distortions: [],
 	bannerTween: null,
 	bannerState: 0,
 	SNAP_TIME: 1.2,
@@ -17,7 +23,6 @@ let Site = {
 	WHEEL_ANIM_INCREASE: 0.15,
 	WHEEL_ANIM_TIME: 0.35,
 	WHEEL_ANIM_CAP_TIME: 1,
-	steadyBanner: true,
 	targetBannerWheel: 0,
 	lastSnappedImage: null,
 	zoom: 1,
@@ -68,11 +73,11 @@ Site.requestLoop = function(){
 }
 
 Site.loop = function(timestamp){
-	this.time += (timestamp - this.lastTimestamp) / 1000;
+	this.delta = (timestamp - this.lastTimestamp) / 1000;
+	this.time += this.delta;
 	this.lastTimestamp = timestamp;
 
 	this.calculateImagePreview();
-
 	this.calculateWordRotation();
 	this.calculateImagePositions();
 
@@ -80,32 +85,39 @@ Site.loop = function(timestamp){
 	this.setSelectionDotsOpacity();
 	this.setStageMarkerPosition();
 	
-	this.renderBanner(timestamp);
+	this.renderBanner();
 	this.requestLoop();
+}
+
+Site.mouseOnNextImagePreview = function(){
+	return this.mousePosition.x > this.offscreenCanvas.width * 0.95;
+}
+
+Site.mouseOnPreviousImagePreview = function(){
+	return this.mousePosition.x < this.offscreenCanvas.width * 0.05;
 }
 
 // calculate animation for when holding the mouse on the sides of the screen
 Site.calculateImagePreview = function(){
-	let withinCollisionArea = this.mousePosition.x > this.offscreenCanvas.width * 0.95 ||
-				this.mousePosition.x < this.offscreenCanvas.width * 0.05;
+	let withinCollisionArea = this.mouseOnNextImagePreview() || this.mouseOnPreviousImagePreview();
 	switch (this.bannerState){
 		case this.BannerStateEnum.STEADY:
 			if (withinCollisionArea){
 				// should transition to image preview
 				this.killImagePreviewTween();
 				this.imagePreviewTargetShear = this.imagePreviewShearAmount;
-				if (this.mousePosition.x > this.offscreenCanvas.width * 0.95)
+				if (this.mouseOnNextImagePreview())
 					this.imagePreviewTargetShear *= -1;
 
 				this.bannerState = this.BannerStateEnum.IMAGE_PREVIEW;
-				this.imagePreviewTween = gsap.to(this, { duration: 0.4, imagePreviewShear: this.imagePreviewTargetShear })
+				this.imagePreviewTween = gsap.to(this, { duration: 0.4, imagePreviewShear: this.imagePreviewTargetShear, distortIntensity: this.MAX_DISTORT_INTENSITY })
 			}	
 			break;
 		case this.BannerStateEnum.IMAGE_PREVIEW:
 			if (!withinCollisionArea){
 				this.killImagePreviewTween();
 				this.bannerState = this.BannerStateEnum.IMAGE_PREVIEW_TRANSITION;
-				this.imagePreviewTween = gsap.to(this, { duration: 0.8, imagePreviewShear: 0, ease: "elastic.out(1, 0.5)" });				
+				this.imagePreviewTween = gsap.to(this, { duration: 0.8, imagePreviewShear: 0, ease: "elastic.out(1, 0.5)", distortIntensity: this.MIN_DISTORT_INTENSITY });				
 				this.imagePreviewTween.eventCallback("onComplete", () => {
 					if (this.bannerState == this.BannerStateEnum.IMAGE_PREVIEW_TRANSITION){
 						this.bannerState = this.BannerStateEnum.STEADY;
@@ -123,9 +135,12 @@ Site.killImagePreviewTween = function(){
 }
 
 Site.initializeBanner = function(){
+	this.initializeDistortions();
 	this.bannerCanvas = document.getElementById('top-banner-canvas');
+	this.bannerContext = this.bannerCanvas.getContext('2d');
 	this.offscreenCanvas = document.createElement('canvas');
 	this.offscreenContext = this.offscreenCanvas.getContext('2d');
+	this.webGLCanvas = document.createElement('canvas');
 
 	this.setCanvasSize();
 
@@ -174,11 +189,14 @@ Site.centerImage = function(centerImage){
 }
 
 Site.setCanvasSize = function() {
-	this.offscreenCanvas.width = window.innerWidth;
-	this.offscreenCanvas.height = window.innerHeight;
-
-	this.bannerCanvas.width = window.innerWidth;
-	this.bannerCanvas.height = window.innerHeight;
+	let w = window.innerWidth;
+	let h = window.innerHeight;
+	this.offscreenCanvas.width = w;
+	this.offscreenCanvas.height = h;
+	this.bannerCanvas.width = w;
+	this.bannerCanvas.height = h;
+	this.webGLCanvas.width = w;
+	this.webGLCanvas.height = h;
 }
 
 Site.getBannerWidth = function(){
@@ -187,6 +205,18 @@ Site.getBannerWidth = function(){
 
 Site.distanceToImage = function(bimg){
 	return Math.abs(-this.bannerCamera.x - bimg.x);
+}
+
+Site.calculateDistortIntensity = function(){
+	switch (this.bannerState){
+		case this.BannerStateEnum.STEADY:
+		case this.BannerStateEnum.DRAGGING:
+			if (this.lastSnappedImage){
+				let distance = this.distanceToImage(this.lastSnappedImage);
+				this.distortIntensity = Utils.lerp(0, this.getCanvasWidth(), distance, this.MIN_DISTORT_INTENSITY, this.MAX_DISTORT_INTENSITY);
+			}
+			break;
+	}
 }
 
 Site.setShear = function(){
@@ -227,7 +257,6 @@ Site.render2DCanvas = function(){
 		this.offscreenContext.restore();
 	}
 	this.offscreenContext.restore();
-	this.drawSectionName();
 }
 
 Site.getImageCenterX = function(bimg){
@@ -263,37 +292,95 @@ Site.getBannerWebGLShader = function(){
 	const fragShaderSource = `
     	precision highp float;
     	varying vec2 texCoords;
+    	uniform float aspect;
     	uniform sampler2D uTexture;
 
-    	uniform vec2 distorts[6];
-
-    	uniform float disttest;
+    	uniform float time;	
     	uniform float intensity;
-    	uniform float time;
+    	uniform vec2 d_pos[6];
+    	uniform float d_int[6];  
+    	uniform float d_ena[6];    	
+    	uniform float d_rad[6];
 
-    	vec4 displace(sampler2D uTexture, vec2 vUV, float dst, float intensity){
-    		vUV.x += dst * intensity;
-    		vec4 color = texture2D(uTexture, vUV);
-    		return color;
+    	float random (in vec2 _st) {
+    		return fract(sin(dot(_st.xy, vec2(12.9898,78.233))) * 43758.5453123);
+		}
+
+		float noise (in vec2 _st) {
+		    vec2 i = floor(_st);
+		    vec2 f = fract(_st);
+
+		    // Four corners in 2D of a tile
+		    float a = random(i);
+		    float b = random(i + vec2(1.0, 0.0));
+		    float c = random(i + vec2(0.0, 1.0));
+		    float d = random(i + vec2(1.0, 1.0));
+
+		    vec2 u = f * f * (3.0 - 2.0 * f);
+
+		    return mix(a, b, u.x) +
+		            (c - a)* u.y * (1.0 - u.x) +
+		            (d - b) * u.x * u.y;
+		}
+
+		#define NUM_OCTAVES 2
+
+		float fbm (in vec2 _st) {
+			float v = 0.0;
+			float a = 0.1;
+			vec2 shift = vec2(100.0);
+
+			// Rotate to reduce axial bias
+			mat2 rot = mat2(cos(0.5), sin(0.5), -sin(0.5), cos(0.50));
+			for (int i = 0; i < NUM_OCTAVES; ++i) {
+				_st = rot * _st * 1.0 + shift;
+				v += a * noise(_st);
+				a *= 0.1;
+			}
+			return v;
+		}
+
+    	// displaces everything to the right according to distance
+    	vec2 displace(vec2 vUV, float dst, float intensity){
+    		vUV.x += dst * 0.2 * intensity;
+    		vUV.y += dst * intensity;
+    		return vUV;
     	}
 
     	void main() {
-    		vec4 color = texture2D(uTexture, texCoords);
 
+
+    		/*
+    		vec2 coords = texCoords;
     		for (int i = 0; i < 6; i++){
-				float dist = distance(distorts[i], texCoords);
-	    		if (dist < disttest){
-	    			color = displace(uTexture, texCoords, disttest - dist, intensity);
+				float dist = distance(d_pos[i], texCoords);
+	    		if (dist < d_rad[i]){
+	    			//color = displace(uTexture, texCoords, disttest - dist, intensity);
+	    			coords = displace(coords, d_rad[i] - dist, d_int[i]);
 	    		}
     		}
+    		*/
 
+    		vec2 othercoords = texCoords;
+    		//float amount = fbm(othercoords * 10.0 + 1.0 * time);
+    		othercoords *= 4.0;
+
+    		vec2 coords = vec2(0.0, 0.0);
+
+	  		coords.x = intensity * fbm(othercoords + 0.3 * time * 2.0);
+  			//coords.y = fbm(othercoords + 0.1 * time * 0.1 * );
+
+  			vec2 newcoords = texCoords + coords;
+    		vec4 color = texture2D(uTexture, newcoords);
+
+    		/*
     		for (int i = 0; i < 1; i++){
 				float dist = abs(distorts[i].x - texCoords.x);
 	    		if (dist < disttest){
 	    			float intens = sin(10.0 * texCoords.y + time);
 	    			color = displace(uTexture, texCoords, disttest - dist, intens);
 	    		}
-    		}
+    		}*/
 		
       		gl_FragColor = color;
 		}
@@ -302,33 +389,69 @@ Site.getBannerWebGLShader = function(){
   	return { vert: vertShaderSource, frag: fragShaderSource };
 }
 
-Site.renderBanner = function(timestamp){
-	this.distortIntensity = 1 * Math.sin(timestamp / 2000);
-	this.setCanvasSize();
-	
-	this.render2DCanvas();
-	this.renderWebGLBanner();
+Site.initializeDistortions = function(){
+	for (let i = 0; i < this.maxDistortions; i++){
+		this.distortions.push(new Distortion());
+	}
 }
 
-Site.render2DBanner = function(){
-	var context = this.bannerCanvas.getContext('2d');
-	context.drawImage(this.offscreenCanvas, 0, 0);
+Site.renderBanner = function(){
+	this.setCanvasSize();
+	
+	this.calculateDistortIntensity();	
+	this.render2DCanvas();
+	this.renderWebGLBanner();
+	this.renderBannerCanvas();
+}
+
+// renders letters on top of weblg canvas
+Site.renderBannerCanvas = function(){
+	this.bannerContext.drawImage(this.webGLCanvas, 0, 0);
+	this.drawSectionName(this.bannerContext);
+}
+
+Site.getDistortionParameters = function(gl){
+	let d_pos = [];
+	let d_ena = [];
+	let d_int = [];
+	let d_rad = [];
+	for (var i = 0; i < this.distortions.length; i++){
+		let dist = this.distortions[i];
+		d_pos.push(dist.x);
+		d_pos.push(dist.y);
+		d_ena.push(dist.enabled);
+		d_int.push(dist.intensity);
+		d_rad.push(dist.radius);
+	}
+	let parameters = [
+		{ type: gl.FLOAT_VEC2, name: "d_pos", value: d_pos },		
+		{ type: gl.FLOAT, name: "d_ena", value: d_ena },
+		{ type: gl.FLOAT, name: "d_int", value: d_int },
+		{ type: gl.FLOAT, name: "d_rad", value: d_rad },	
+	];
+	return parameters;
+}
+
+Site.getCanvasAspectRatio = function(){
+	return this.bannerCanvas.width / this.bannerCanvas.height;
 }
 
 Site.renderWebGLBanner = function(){
-	const gl = this.bannerCanvas.getContext('webgl');
+	const gl = this.webGLCanvas.getContext('webgl');
  	WebGLUtils.setGLContext(gl);	
  	WebGLUtils.resizeAndClear();
 
 	let shaders = this.getBannerWebGLShader();	
 
-  	WebGLUtils.applyShader(this.offscreenCanvas, this.bannerCanvas, 
-  		shaders.vert, shaders.frag, gl, 
-  		[
-  			{ type: gl.FLOAT_VEC2, name: "distorts", value: [0.5, 0.5, 0.2, 0.2, 0.4, 0.9, 0.2, 0.4, 0.1, 0.8, 0.8, 0.5]}, { type: gl.FLOAT, name: "disttest", value: 0.1 }, 
-  			{ type: gl.FLOAT, name: "intensity", value: this.distortIntensity },
-  			{ type: gl.FLOAT, name: "time", value: this.time }
-  		]);
+	let shaderParameters = [
+		{ type: gl.FLOAT, name: "time", value: this.time },
+		{ type: gl.FLOAT, name: "intensity", value: this.distortIntensity },
+		{ type: gl.FLOAT, name: "aspect", value: this.getCanvasAspectRatio() },	
+	];
+	shaderParameters = shaderParameters.concat(this.getDistortionParameters(gl));
+
+  	WebGLUtils.applyShader(this.offscreenCanvas, this.webGLCanvas, 
+  		shaders.vert, shaders.frag, gl, shaderParameters);
 }
 
 Site.captureMousePosition = function(event){
@@ -380,11 +503,25 @@ Site.onmousemove = function(event){
 	let oldX = this.mousePosition.x;
 	this.captureMousePosition(event);
 	if (this.mouseDown && this.state == this.StateEnum.FRONT_SCREEN){
-		let deltaX = this.mousePosition.x - oldX;
-		this.dragged = true;
-		this.steadyBanner = false;
-		this.moveBanner(deltaX);
+		switch (this.bannerState){
+			case this.BannerStateEnum.STEADY:
+			case this.BannerStateEnum.DRAGGING:			
+				let deltaX = this.mousePosition.x - oldX;
+				this.dragged = true;
+				this.moveBanner(deltaX);
+				this.transitionToDraggingState();
+				break;
+		}
 	}
+}
+
+Site.transitionToSteadyState = function(){
+	this.bannerState = this.BannerStateEnum.STEADY;
+}
+
+Site.transitionToDraggingState = function(){
+	// todo: if transitioning from IMAGE_PREVIEW, remove the shear?
+	this.bannerState = this.BannerStateEnum.DRAGGING;
 }
 
 Site.moveBannerWheel = function(deltaX){
@@ -415,6 +552,7 @@ Site.killBannerTweens = function(){
 	}
 
 }
+
 Site.moveBanner = function(deltaX){
 	this.bannerCamera.x += deltaX;
 }
@@ -432,8 +570,8 @@ Site.snapBannerToImage = function(image, fromPreview){
 	let duration = fromPreview? this.SNAP_TIME_PREVIEW : this.SNAP_TIME;
 	this.lastSnappedImage = image;
 	this.bannerTween = gsap.to(this.bannerCamera, { duration: duration, x: -image.x, ease: "elastic.out(1,0.6)" });
-	this.bannerTween.eventCallback('onComplete', function(){
-		Site.steadyBanner = true;
+	this.bannerTween.eventCallback('onComplete', () => {
+		this.transitionToSteadyState();
 	});
 }
 
@@ -482,19 +620,19 @@ Site.advanceTimeline = function(t){
 }
 
 Site.onclick = function(event){
+	let image;
 	switch (this.state){
 		case this.StateEnum.FRONT_SCREEN:
 			switch (this.bannerState){
 				case this.BannerStateEnum.STEADY:
-					if (this.steadyBanner){ // maybe should remove
-						let image = this.calculateCurrentImage();
-						this.transitionToContent(image);
-					}
+					image = this.calculateCurrentImage();
+					this.transitionToContent(image);
 					break;
 				case this.BannerStateEnum.IMAGE_PREVIEW:
-					let image = this.calculateCurrentImage();
+					image = this.calculateCurrentImage();
 					let index = this.getImageIndex(image);
-					let nextIndex = (index + 1 + this.bannerImages.length) % this.bannerImages.length;
+					let indexUpdate = this.mouseOnNextImagePreview()? 1 : -1;
+					let nextIndex = (index + indexUpdate + this.bannerImages.length) % this.bannerImages.length;
 					let newImage = this.bannerImages[nextIndex];
 					this.snapBannerToImage(newImage, true);
 					this.bannerState = this.BannerStateEnum.STEADY;
@@ -594,119 +732,19 @@ Site.getBannerWords = function(){
 	return words;
 }
 
-Site.drawSectionName = function(){
+Site.drawSectionName = function(context){
 	// draw rounded word
 	var word = this.getBannerWords();
-	var fontSize = this.offscreenContext.canvas.height / 5;
+	var fontSize = context.canvas.height / 5;
 
-	this.offscreenContext.save();
-	this.offscreenContext.font = fontSize + "px Arial";	
+	context.save();
+	context.font = fontSize + "px Arial";	
 
-	this.offscreenContext.fillCircleText(word, this.offscreenCanvas.width / 2, 
-		this.offscreenCanvas.width, this.offscreenCanvas.width * 0.75, 
+	context.fillCircleText(word, context.canvas.width / 2, 
+		context.canvas.width, context.canvas.width * 0.75, 
 		this.wordRotation, undefined, false);
 
-	/*
-	function drawStack(ctx){
-		var w = ctx.canvas.width;
-		var h = ctx.canvas.height;
-    	var Ribbon = {maxChar: word.length, startX: (-w/3), startY: (3*h/2), 
-              control1X: (-w/3), control1Y: 0, 
-              control2X: (4*w/3), control2Y: 0, 
-              endX: (4*w/3), endY: (3*h/2) };
-    
-	    fillRibbon(word, Ribbon, ctx); 
-	}
-
-	function fillRibbon(text, Ribbon, ctx){
-		var textCurve = [];
-		var ribbon = text.substring(0, Ribbon.maxChar);
-		var curveSample = 1000;
-
-		xDist = 0;
-		var i = 0;
-		for (i = 0; i < curveSample; i++){
-			a = new bezier2(i/curveSample,Ribbon.startX,Ribbon.startY,Ribbon.control1X,Ribbon.control1Y,Ribbon.control2X,Ribbon.control2Y,Ribbon.endX,Ribbon.endY);
-			b = new bezier2((i+1)/curveSample,Ribbon.startX,Ribbon.startY,Ribbon.control1X,Ribbon.control1Y,Ribbon.control2X,Ribbon.control2Y,Ribbon.endX,Ribbon.endY);
-			c = new bezier(a,b);
-			textCurve.push({bezier: a, curve: c.curve});
-		}
-
-		letterPadding = ctx.measureText(" ").width / 4; 
-		w = ribbon.length;
-		ww = Math.round(ctx.measureText(ribbon).width);
-
-		totalPadding = (w-1) * letterPadding + Site.wordOffset;
-		totalLength = ww + totalPadding;
-		p = 0;
-
-		cDist = textCurve[curveSample-1].curve.cDist;
-
-		z = (cDist / 2) - (totalLength / 2);
-
-		for (i = 0; i < curveSample; i++){
-			if (textCurve[i].curve.cDist >= z){
-				p = i;
-				break;
-			}
-		}
-
-		for (i = 0; i < w ; i++){
-			ctx.save();
-			ctx.translate(textCurve[p].bezier.point.x, textCurve[p].bezier.point.y);
-			ctx.rotate(textCurve[p].curve.rad);
-			ctx.fillText(ribbon[i], 0, 0);
-			ctx.restore();
-			
-			x1 = ctx.measureText(ribbon[i]).width + letterPadding;
-		    x2 = 0;	
-			for (j=p;j < curveSample;j++){
-				x2 = x2 + textCurve[j].curve.dist;
-				if (x2 >= x1){
-					p = j;
-					break;
-				}
-			}
-		}
-	} //end FillRibon
-
-	function bezier(b1, b2){
-		//Final stage which takes p, p+1 and calculates the rotation, distance on the path and accumulates the total distance
-		this.rad = Math.atan(b1.point.mY/b1.point.mX);
-		this.b2 = b2;
-		this.b1 = b1;
-		dx = (b2.x - b1.x);
-		dx2 = (b2.x - b1.x) * (b2.x - b1.x);
-		this.dist = Math.sqrt( ((b2.x - b1.x) * (b2.x - b1.x)) + ((b2.y - b1.y) * (b2.y - b1.y)) );
-		xDist = xDist + this.dist;
-		this.curve = {rad: this.rad, dist: this.dist, cDist: xDist};
-	}
-
-	function bezierT(t,startX, startY,control1X,control1Y,control2X,control2Y,endX,endY){
-		//calculates the tangent line to a point in the curve; later used to calculate the degrees of rotation at this point.
-		this.mx = (3*(1-t)*(1-t) * (control1X - startX)) + ((6 * (1-t) * t) * (control2X - control1X)) + (3 * t * t * (endX - control2X));
-		this.my = (3*(1-t)*(1-t) * (control1Y - startY)) + ((6 * (1-t) * t) * (control2Y - control1Y)) + (3 * t * t * (endY - control2Y));
-	}
-
-	function bezier2(t,startX, startY,control1X,control1Y,control2X,control2Y,endX,endY){
-		//Quadratic bezier curve plotter
-		this.Bezier1 = new bezier1(t,startX,startY,control1X,control1Y,control2X,control2Y);
-		this.Bezier2 = new bezier1(t,control1X,control1Y,control2X,control2Y,endX,endY);
-		this.x = ((1 - t) * this.Bezier1.x) + (t * this.Bezier2.x);
-		this.y = ((1 - t) * this.Bezier1.y) + (t * this.Bezier2.y);
-		this.slope = new bezierT(t,startX, startY,control1X,control1Y,control2X,control2Y,endX,endY);
-
-		this.point = {t: t, x: this.x, y: this.y, mX: this.slope.mx, mY: this.slope.my};
-	}
-	function bezier1(t,startX, startY,control1X,control1Y,control2X,control2Y){
-		//linear bezier curve plotter; used recursivly in the quadratic bezier curve calculation
-		this.x = (( 1 - t) * (1 - t) * startX) + (2 * (1 - t) * t * control1X) + (t * t * control2X);
-		this.y = (( 1 - t) * (1 - t) * startY) + (2 * (1 - t) * t * control1Y) + (t * t * control2Y);
-	}
-
-	drawStack(this.offscreenContext);
-	*/
-	this.offscreenContext.restore();
+	context.restore();
 }
 
 

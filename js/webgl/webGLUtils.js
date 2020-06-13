@@ -96,12 +96,22 @@ WebGLUtils.setUniforms = function(program, uniforms){
 WebGLUtils.setUniform = function(program, type, name, value) {
 	var location = this.gl.getUniformLocation(program, name);
 
-	switch (type){
-		case this.gl.FLOAT:
-			this.gl.uniform1f(location, value);
-			break;
-		case this.gl.FLOAT_VEC2:
-			this.gl.uniform2fv(location, value);
-			break;
-	}
+  if (location){
+      switch (type){
+          case this.gl.FLOAT:
+              if (value instanceof Array){
+                  this.gl.uniform1fv(location, value);
+              }else{
+                  this.gl.uniform1f(location, value);
+              }
+              break;
+          case this.gl.FLOAT_VEC2:
+              this.gl.uniform2fv(location, value);
+              break;
+      }    
+  }else{
+      //console.log("Uniform " + name + " not found");
+  }
+
+
 }
