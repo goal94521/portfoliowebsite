@@ -39,7 +39,8 @@ let Site = {
 
 Site.state = Site.StateEnum.FRONT_SCREEN; // todo change to preloader
 
-Site.wordRotationOffset = 4.35;
+// base rotation offset is 
+Site.wordRotationOffset	= Math.PI * 1.5; // 
 Site.wordRotationSpeed = 1 / 2600;
 Site.wordRotation = 0;
 
@@ -78,8 +79,8 @@ Site.loop = function(timestamp){
 	this.lastTimestamp = timestamp;
 
 	this.calculateImagePreview();
-	this.calculateWordRotation();
 	this.calculateImagePositions();
+	this.calculateWordRotation();
 
 	// markers management
 	this.setSelectionDotsOpacity();
@@ -407,7 +408,7 @@ Site.renderBanner = function(){
 // renders letters on top of weblg canvas
 Site.renderBannerCanvas = function(){
 	this.bannerContext.drawImage(this.webGLCanvas, 0, 0);
-	this.drawSectionName(this.bannerContext);
+	this.drawSectionNames(this.bannerContext);
 }
 
 Site.getDistortionParameters = function(gl){
@@ -562,8 +563,15 @@ Site.calculateImagePositions = function(){
 	this.centerImage(image);
 }
 
+Site.getWordCircleRadius = function() {
+	return this.getCanvasWidth() * 0.8;
+}
+
 Site.calculateWordRotation = function() {
-	this.wordRotation = this.wordRotationOffset + this.bannerCamera.x * this.wordRotationSpeed;
+	for (var i = 0; i < this.bannerImages.length; i++){
+		let bimg = this.bannerImages[i];
+		bimg.angle = this.wordRotationOffset + (bimg.x + this.bannerCamera.x) / (1.7 * this.getWordCircleRadius());
+	}
 }
 
 Site.snapBannerToImage = function(image, fromPreview){
@@ -645,7 +653,6 @@ Site.onclick = function(event){
 Site.transitionToContent = function(bimg){
 	// position canvas
 	this.bannerCamera.x = -bimg.x;
-	this.calculateWordRotation();
 
 	document.getElementById(bimg.contentId).style.display = "block";
 	this.state = this.StateEnum.CONTENT_SCREEN;
@@ -732,18 +739,38 @@ Site.getBannerWords = function(){
 	return words;
 }
 
-Site.drawSectionName = function(context){
+Site.drawSectionNames = function(context){
 	// draw rounded word
-	var word = this.getBannerWords();
-	var fontSize = context.canvas.height / 5;
-
 	context.save();
-	context.font = fontSize + "px Arial";	
+	let fontSize = context.canvas.height / 5;
+	context.font = fontSize + "px PlayfairDisplay";	
+	context.textAlign = "center";
+	context.textBaseline = "top";
 
-	context.fillCircleText(word, context.canvas.width / 2, 
-		context.canvas.width, context.canvas.width * 0.75, 
-		this.wordRotation, undefined, false);
+	let currentImage = this.calculateCurrentImage();
+	let currentIndex = this.getImageIndex(currentImage);
 
+	for (let i = -1; i <= 1; i++){
+		let index = (currentIndex + i + this.bannerImages.length) % this.bannerImages.length;
+		let bimg = this.bannerImages[index];
+		let word = bimg.label;
+		let radius = this.getWordCircleRadius();
+		context.fillCircleText(word, context.canvas.width / 2, 
+			context.canvas.height * 0.45 + radius, radius, bimg.angle, undefined, false);
+	}
+
+	fontSize = Math.min(context.canvas.height * 0.1, 80);
+	context.font = fontSize + "px PlayfairDisplayItalic";	
+	context.textBaseline = "bottom";
+	
+	for (let i = -1; i <= 1; i++){
+		let index = (currentIndex + i + this.bannerImages.length) % this.bannerImages.length;
+		let bimg = this.bannerImages[index];
+		let word = bimg.number;
+		let radius = this.getWordCircleRadius();
+		context.fillCircleText(word, context.canvas.width / 2, 
+			context.canvas.height * 0.45 + radius, radius, bimg.angle, undefined, false);
+	}
 	context.restore();
 }
 
@@ -759,7 +786,6 @@ Site.loadData();
                                            // after render the currentTransform is restored to default transform
                                            
       
-
     // measure circle text
     // ctx: canvas context
     // text: string of text to measure

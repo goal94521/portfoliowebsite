@@ -11,6 +11,12 @@
     font-display: block;
 }
 
+@font-face {
+    font-family: PlayfairDisplayItalic;
+    src: url(fonts/PlayfairDisplay-Italic-VariableFont_wght.ttf);
+    font-display: block;
+}
+
 .top-banner{
 	height: 100vh;
 }
