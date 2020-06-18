@@ -28,9 +28,9 @@
 .designer-name{
 	position: fixed;
 	z-index: 10;
-	top: 3vw;
-	left: 3vw;
-	font-size: 30px;
+	top: 6vw;
+	left: 4vw;
+	font-size: 15px;
 	font-family: 'SVNGilroyLight';
 	cursor: pointer;
 }
@@ -38,9 +38,9 @@
 .about{
 	position: fixed;
 	z-index: 10;
-	right: 3vw;
-	top: 3vw;
-	font-size: 30px;
+	right: 4vw;
+	top: 6vw;
+	font-size: 15px;
 	font-family: 'SVNGilroyLight';
 }
 
