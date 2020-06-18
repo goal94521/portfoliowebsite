@@ -882,10 +882,10 @@ Utils.resizeImage = function(selectedImage, maxWidth, maxHeight, fillContainer){
             resize.width = maxWidth;
             resize.x = 0;
             resize.height = imageHeight * maxWidth / imageWidth;
-            resize.y = resize.height - maxHeight / 2;
+            resize.y = -1 * (resize.height - maxHeight) / 2;
         }else{
             resize.width = imageWidth * maxHeight / imageHeight;
-            resize.x = resize.width - maxWidth / 2;
+            resize.x = -1 * (resize.width - maxWidth) / 2;
             resize.height = maxHeight;
             resize.y = 0;
         }

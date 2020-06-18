@@ -34,7 +34,10 @@ let Site = {
 	imagePreviewTargetShear: 0,
 	imagePreviewShearAmount: 0.4,
 	time: 0,
-	lastTimestamp: 0
+	lastTimestamp: 0,
+	otherWordsOpacity: 1,
+	otherWordsCurvature: 1,
+	WORDS_OPACITY_TIME: 2,
 };
 
 Site.state = Site.StateEnum.FRONT_SCREEN; // todo change to preloader
@@ -47,12 +50,55 @@ Site.wordRotation = 0;
 Site.bannerCamera = { x: 0, y: 0 };
 Site.bannerFolder = "resources/images/topbanner/";
 Site.bannerImages = [ 
-	{ src: "top_banner_1.png", number: "01", label: "EDITORIAL", contentId: "editorial-content" }, 
-	{ src: "top_banner_2.png", number: "02", label: "E.COMM", contentId: "ecommerce-content" }, 
-	{ src: "top_banner_3.png", number: "03", label: "AGENCY", contentId: "agency-content" }, 
-	{ src: "top_banner_4.png", number: "04", label: "JEWELRY", contentId: "jewelry-content" }, 
-	{ src: "top_banner_5.png", number: "05", label: "BEAUTY", contentId: "beauty-content" },
-	{ src: "top_banner_6.png", number: "06", label: "UX", contentId: "ux-content" }, 
+	{ sectionName: "editorial", src: "top_banner_1.png", number: "01", label: "EDITORIAL", contentId: "editorial-content" }, 
+	{ sectionName: "ecommerce", src: "top_banner_2.png", number: "02", label: "E.COMM", contentId: "ecommerce-content" }, 
+	{ sectionName: "agency", src: "top_banner_3.png", number: "03", label: "AGENCY", contentId: "agency-content" }, 
+	{ sectionName: "jewelry", src: "top_banner_4.png", number: "04", label: "JEWELRY", contentId: "jewelry-content" }, 
+	{ sectionName: "beauty", src: "top_banner_5.png", number: "05", label: "BEAUTY", contentId: "beauty-content" },
+	{ sectionName: "ux", src: "top_banner_6.png", number: "06", label: "UX", contentId: "ux-content" }, 
+];
+
+Site.imagesPath = "resources/images/{{section_name}}/";
+
+Site.bannerContent = [
+	[ 
+		{ id: "editorial_image_1_1", src: "designkk_kayako_kobayashi_aesthete03.png" }, 
+		{ id: "editorial_image_1_2", src: "designkk_kayako_kobayashi_aesthete08.png" }, 
+		{ id: "editorial_image_2_1", src: "designkk_kayako_kobayashi_aesthete06.png" }, 
+		{ id: "editorial_image_2_2", src: "designkk_kayako_kobayashi_aesthete05.png" }, 
+		{ id: "editorial_image_3_1", src: "designkk_kayako_kobayashi_aesthete09.png" }, 
+		{ id: "editorial_image_3_2", src: "designkk_kayako_kobayashi_aesthete02.png" }, 
+		{ id: "editorial_image_4_1", src: "designkk_kayako_kobayashi_aesthete01@2x.png" }, 
+		{ id: "editorial_image_5_1", src: "aesthete01.png" }, 
+		{ id: "editorial_image_5_2", src: "aesthete-1.png" }, 
+		{ id: "editorial_image_6_1", src: "CkSHIf_UkAAPBYe.png" }, 
+		{ id: "editorial_image_7_1", src: "designkk_kayako_kobayashi_ralphlauren01.png" }, 
+		{ id: "editorial_image_7_2", src: "designkk_kayako_kobayashi_ralphlauren02.png" }, 
+		{ id: "editorial_image_8_1", src: "designkk_kayako_kobayashi_rlmagazine01.png" }, 
+	],
+	[
+		{ id: "ecommerce_image_1_1", src: "designkk_kayako_kobayashi_coach01.png" }, 
+		{ id: "ecommerce_image_2_1", src: "designkk_kayako_kobayashi_coach02.png" }, 
+		{ id: "ecommerce_image_2_2", src: "designkk_kayako_kobayashi_coach03.png" }, 
+		{ id: "ecommerce_image_3_1", src: "designkk_kayako_kobayashi_joefresh02.png" }, 
+		{ id: "ecommerce_image_4_1", src: "designkk_kayako_kobayashi_nancygonzalez-fall03.png" }, 
+		{ id: "ecommerce_image_5_1", src: "designkk_kayako_kobayashi_joefresh_ecommerce02.png" }, 
+		{ id: "ecommerce_image_6_1", src: "designkk_kayako_kobayashi_joefresh_ecommerce03.png" }, 
+		{ id: "ecommerce_image_6_2", src: "designkk_kayako_kobayashi_joefresh01.png" }, 
+		{ id: "ecommerce_image_7_1", src: "designkk_kayako_kobayashi_isaacmizrahi05.png" }, 
+		{ id: "ecommerce_image_7_2", src: "designkk_kayako_kobayashi_isaacmizrahi06copy.png" }, 
+		{ id: "ecommerce_image_8_1", src: "designkk_kayako_kobayashi_culturehome02.png" }, 
+		{ id: "ecommerce_image_9_1", src: "designkk_kayako_kobayashi_colehaan01.png" }, 
+		{ id: "ecommerce_image_9_2", src: "designkk_kayako_kobayashi_assouline01.png" }, 
+		{ id: "ecommerce_image_9_3", src: "designkk_kayako_kobayashi_joefresh04.png" }, 
+		{ id: "ecommerce_image_10_1", src: "designkk_kayako_kobayashi_ripka.png" }, 
+		{ id: "ecommerce_image_11_1", src: "designkk_ecommerce.png" }, 
+		{ id: "ecommerce_image_12_1", src: "designkk_kayako_kobayashi_katespade01.png" }, 
+	],
+	[],
+	[],
+	[],
+	[],
 ];
 
 Site.initialize = function(){
@@ -253,7 +299,7 @@ Site.render2DCanvas = function(){
 		let targetHeight = this.offscreenCanvas.height;
 		let dimensions = Utils.resizeImage(bimg.image, targetWidth, targetHeight, true);
 		let xcoord = bimg.x + this.bannerCamera.x;		
-		this.offscreenContext.drawImage(bimg.image, xcoord, 0, dimensions.width, dimensions.height);
+		this.offscreenContext.drawImage(bimg.image, xcoord, dimensions.y, dimensions.width, dimensions.height);
 		
 		this.offscreenContext.restore();
 	}
@@ -349,19 +395,6 @@ Site.getBannerWebGLShader = function(){
     	}
 
     	void main() {
-
-
-    		/*
-    		vec2 coords = texCoords;
-    		for (int i = 0; i < 6; i++){
-				float dist = distance(d_pos[i], texCoords);
-	    		if (dist < d_rad[i]){
-	    			//color = displace(uTexture, texCoords, disttest - dist, intensity);
-	    			coords = displace(coords, d_rad[i] - dist, d_int[i]);
-	    		}
-    		}
-    		*/
-
     		vec2 othercoords = texCoords;
     		//float amount = fbm(othercoords * 10.0 + 1.0 * time);
     		othercoords *= 4.0;
@@ -373,15 +406,6 @@ Site.getBannerWebGLShader = function(){
 
   			vec2 newcoords = texCoords + coords;
     		vec4 color = texture2D(uTexture, newcoords);
-
-    		/*
-    		for (int i = 0; i < 1; i++){
-				float dist = abs(distorts[i].x - texCoords.x);
-	    		if (dist < disttest){
-	    			float intens = sin(10.0 * texCoords.y + time);
-	    			color = displace(uTexture, texCoords, disttest - dist, intens);
-	    		}
-    		}*/
 		
       		gl_FragColor = color;
 		}
@@ -654,9 +678,52 @@ Site.transitionToContent = function(bimg){
 	// position canvas
 	this.bannerCamera.x = -bimg.x;
 
-	document.getElementById(bimg.contentId).style.display = "block";
 	this.state = this.StateEnum.CONTENT_SCREEN;
 	this.currentContent = bimg;
+
+	let contentPromise = this.loadContent(bimg)
+	let animationPromise = this.loadContentAnimation();
+
+	document.getElementById('top-banner-canvas').style.cursor = "wait";
+	Promise.all([contentPromise, animationPromise]).then(() => this.showContent(bimg));
+}
+
+Site.loadContentAnimation = function(){
+	return new Promise((resolve, reject) => {
+		let tween = gsap.to(this, { duration: this.WORDS_OPACITY_TIME, ease: Quad.EaseOut, otherWordsOpacity: 0, otherWordsCurvature: 20 });
+		tween.eventCallback("onComplete", resolve);
+	});
+}
+
+Site.getImageSrc = function(bimg, src){
+	let path = this.imagesPath.replace("{{section_name}}", bimg.sectionName);
+	return path + src;
+}
+
+Site.loadContent = function(bimg){
+	let index = this.getImageIndex(bimg);
+	let content = this.bannerContent[index];
+
+	let promises = [];
+	for (let i = 0; i < content.length; i++){
+		let img = document.getElementById(content[i].id);
+		if (img.src == "" || !img.complete){
+			promises.push(new Promise(function(resolve, reject){
+				img.onload = resolve;
+			}));
+			if (img.src == ""){
+				img.src = this.getImageSrc(bimg, content[i].src);
+			}
+		}
+	}
+
+	return Promise.all(promises);
+}
+
+Site.showContent = function(bimg){
+	document.getElementById('top-banner-canvas').style.cursor = "pointer";
+
+	document.getElementById(bimg.contentId).style.display = "block";
 }
 
 Site.checkAndTransitionToFront = function(event){
@@ -669,7 +736,14 @@ Site.checkAndTransitionToFront = function(event){
 
 Site.transitionToFront = function(){
 	this.state = this.StateEnum.FRONT_SCREEN;
-	document.getElementById(this.currentContent.contentId).style.display = "none";
+
+	let timeline = gsap.timeline();
+	timeline.add(gsap.to(this, { duration: this.WORDS_OPACITY_TIME, ease: Quad.EaseInOut, otherWordsCurvature: 1, otherWordsOpacity: 1 }));
+
+	timeline.eventCallback("onComplete", () => {
+		document.getElementById(this.currentContent.contentId).style.display = "none";
+	});
+	window.scrollTo({ top: 0, behavior: "smooth"});
 }
 
 Site.setEvents = function(){
@@ -755,14 +829,22 @@ Site.drawSectionNames = function(context){
 		let bimg = this.bannerImages[index];
 		let word = bimg.label;
 		let radius = this.getWordCircleRadius();
+		radius *= this.otherWordsCurvature;
+
+		context.save();
+		if (i != 0){
+			context.globalAlpha = this.otherWordsOpacity;
+		}
 		context.fillCircleText(word, context.canvas.width / 2, 
 			context.canvas.height * 0.45 + radius, radius, bimg.angle, undefined, false);
+		context.restore();
 	}
 
 	fontSize = Math.min(context.canvas.height * 0.1, 80);
 	context.font = fontSize + "px PlayfairDisplayItalic";	
 	context.textBaseline = "bottom";
-	
+
+	context.globalAlpha = this.otherWordsOpacity;	
 	for (let i = -1; i <= 1; i++){
 		let index = (currentIndex + i + this.bannerImages.length) % this.bannerImages.length;
 		let bimg = this.bannerImages[index];
