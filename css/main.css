@@ -17,30 +17,33 @@
     font-display: block;
 }
 
-.top-banner{
-	height: 100vh;
+.fill {
+	width: 100%;
+	height: 100%;
 }
 
 #top-banner-canvas{
 	cursor: pointer;
 }	
 
-.designer-name{
+.designer_name {
 	position: fixed;
 	z-index: 10;
 	top: 6vw;
 	left: 4vw;
-	font-size: 15px;
+	color: white;
+	font-size: 16px;
 	font-family: 'SVNGilroyLight';
 	cursor: pointer;
 }
 
-.about{
+.about {
 	position: fixed;
 	z-index: 10;
 	right: 4vw;
 	top: 6vw;
-	font-size: 15px;
+	color: white;
+	font-size: 16px;
 	font-family: 'SVNGilroyLight';
 }
 
@@ -50,15 +53,40 @@
 	left: 3vw;
 }
 
-.stage-dot{ background-color: black; border-radius: 50%; width: 5px; height: 5px; margin: 10px; display: inline-block; }
+.stage-dot {
+	background-color: white;
+	border-radius: 50%;
+	width: 5px;
+	height: 5px;
+	margin: 10px;
+	display: inline-block;
+}
 
-.selection-dot{ border: 1px solid black; width: 15px; height: 15px; position: absolute; left: 4px; top: 4px; border-radius: 50%; }
+.selection-dot {
+	border: 1px solid white;
+	width: 15px;
+	height: 15px;
+	position: absolute;
+	left: 4px; top: 4px;
+	border-radius: 50%;
+}
 
-.content-row{ margin-left: 5vw; margin-right: 5vw; }
+.content-row {
+	margin-left: 5vw;
+	margin-right: 5vw;
+}
 
-.image-container{ padding: 40px; box-sizing: border-box; }
+.image-container {
+	padding: 40px;
+	box-sizing: border-box;
+}
 
-.half-width-image{ width: calc(50% - 2px); display: inline-block; vertical-align: top; }
+.half-width-image {
+	width: calc(50% - 2px);
+	display: inline-block;
+	vertical-align: top;
+}
+
 .half-width-image img{ width: calc(100% - 0px); }
 
 .full-width-image{ width: 100%; }

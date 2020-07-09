@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en" class='fill'>
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title></title>
+	<link rel="stylesheet" href="./css/main.css">
+	<link rel="stylesheet" href="./css/preloader.css">
+	<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital@1&display=swap" rel="stylesheet">
+	<script type="text/javascript" src="js/wgl.js"></script>
+ </head>
+
+<body class='fill'>
+	<div id='frame' class='fill'>
+		<canvas id='canvas' class='fill'></canvas>
+		<div class='designer_name'>KAYAKO KOBAYASHI</div>
+		<div class='about'>ABOUT</div>
+
+		<div class="stage-marker-container">
+			<div class="selection-dot" id="selection-dot"></div>
+			<div class="stage-dot" id="stage-dot-0"></div>
+			<div class="stage-dot" id="stage-dot-1"></div>
+			<div class="stage-dot" id="stage-dot-2"></div>
+			<div class="stage-dot" id="stage-dot-3"></div>
+			<div class="stage-dot" id="stage-dot-4"></div>
+			<div class="stage-dot" id="stage-dot-5"></div>
+		</div>
+	</div>
+</body>
+
+<script>
+	"use strict";
+
+	var pages = [
+		{name: "editorial", number: "01", label: "EDITORIAL", content: [
+			{src: "designkk_kayako_kobayashi_aesthete03.png"},
+			{src: "designkk_kayako_kobayashi_aesthete08.png"},
+			{src: "designkk_kayako_kobayashi_aesthete06.png"},
+			{src: "designkk_kayako_kobayashi_aesthete05.png"},
+			{src: "designkk_kayako_kobayashi_aesthete09.png"},
+			{src: "designkk_kayako_kobayashi_aesthete02.png"},
+			{src: "designkk_kayako_kobayashi_aesthete01@2x.png"},
+			{src: "aesthete01.png"},
+			{src: "aesthete-1.png"},
+			{src: "CkSHIf_UkAAPBYe.png"},
+			{src: "designkk_kayako_kobayashi_ralphlauren01.png"},
+			{src: "designkk_kayako_kobayashi_ralphlauren02.png"},
+			{src: "designkk_kayako_kobayashi_rlmagazine01.png"}, 
+		]},
+		{name: "ecommerce", number: "02", label: "E.COMM"},
+		{name: "agency", number: "03", label: "AGENCY"},
+		{name: "jewellry", number: "04", label: "JEWELLRY"},
+		{name: "beauty", number: "05", label: "BEAUTY"},
+		{name: "ux", number: "06", label: "UX"},
+	];
+
+	var content = [
+		[
+			{id: "ecommerce_image_1_1", src: "designkk_kayako_kobayashi_coach01.png"}, 
+			{id: "ecommerce_image_2_1", src: "designkk_kayako_kobayashi_coach02.png"}, 
+			{id: "ecommerce_image_2_2", src: "designkk_kayako_kobayashi_coach03.png"}, 
+			{id: "ecommerce_image_3_1", src: "designkk_kayako_kobayashi_joefresh02.png"}, 
+			{id: "ecommerce_image_4_1", src: "designkk_kayako_kobayashi_nancygonzalez-fall03.png"}, 
+			{id: "ecommerce_image_5_1", src: "designkk_kayako_kobayashi_joefresh_ecommerce02.png"}, 
+			{id: "ecommerce_image_6_1", src: "designkk_kayako_kobayashi_joefresh_ecommerce03.png"}, 
+			{id: "ecommerce_image_6_2", src: "designkk_kayako_kobayashi_joefresh01.png"}, 
+			{id: "ecommerce_image_7_1", src: "designkk_kayako_kobayashi_isaacmizrahi05.png"}, 
+			{id: "ecommerce_image_7_2", src: "designkk_kayako_kobayashi_isaacmizrahi06copy.png"}, 
+			{id: "ecommerce_image_8_1", src: "designkk_kayako_kobayashi_culturehome02.png"}, 
+			{id: "ecommerce_image_9_1", src: "designkk_kayako_kobayashi_colehaan01.png"}, 
+			{id: "ecommerce_image_9_2", src: "designkk_kayako_kobayashi_assouline01.png"}, 
+			{id: "ecommerce_image_9_3", src: "designkk_kayako_kobayashi_joefresh04.png"}, 
+			{id: "ecommerce_image_10_1", src: "designkk_kayako_kobayashi_ripka.png"}, 
+			{id: "ecommerce_image_11_1", src: "designkk_ecommerce.png"}, 
+			{id: "ecommerce_image_12_1", src: "designkk_kayako_kobayashi_katespade01.png"}, 
+		],
+	];
+
+	const vertShdr = `
+		attribute vec2 position;
+
+		uniform vec2 org;
+		uniform vec2 size;
+		uniform vec2 texOrg;
+		uniform vec2 texSize;
+
+		varying vec2 tex;
+		
+		void main () {
+			vec2 pos = position * size + org;
+			pos = (pos + vec2 (-0.5, -0.5)) * vec2 (2.0, -2.0);
+			tex = position * texSize + texOrg;
+			gl_Position = vec4 (pos, 0, 1.0);
+		}
+	`;
+
+	const fragShdr = `
+		precision highp float;
+		varying vec2 tex;
+
+		uniform sampler2D diffuse;
+
+		uniform float aspect;
+		uniform float time;	
+
+		void main () {
+			vec2 uv = tex;
+			vec4 color = texture2D (diffuse, uv);
+			gl_FragColor = color;
+		}
+	`;
+
+	var elemFrame;
+	var canvas;
+	var gl;
+	var wgl;
+	var screen;
+	var prog;
+	var idxPage = 0;
+	var phase = 'page';
+	var slide = {dx: 0, dy: 0};
+
+	function drawImage (tex, x, y, w, h, tx, ty, tw, th) {
+		wgl.setUniforms (prog, {
+			org: {type: gl.FLOAT_VEC2, value: [x, y]},
+			size: {type: gl.FLOAT_VEC2, value: [w, h]},
+			texOrg: {type: gl.FLOAT_VEC2, value: [tx, th]},
+			texSize: {type: gl.FLOAT_VEC2, value: [tw - tx, ty - th]},
+			diffuse: {type: gl.TEXTURE0, value: tex},
+		});
+
+		wgl.drawQuad ();
+	}
+
+	function getScrollPage () {
+		var num = Math.floor (screen.slideDelta);
+
+		while (num < 0) {
+			num += pages.length;
+		}
+
+		return num % pages.length;
+	}
+
+	function update () {
+		switch (phase) {
+			case 'content':
+			case 'scroll':
+				if (Math.abs (screen.scroll - screen.scrollDelta) < 0.0002) {
+					screen.scrollDelta = screen.scroll;
+				}
+				else screen.scrollDelta += (screen.scroll - screen.scrollDelta) * 0.12;
+
+				var y = -screen.scrollDelta;
+				var content = screen.content;
+				var idx = 0;
+
+				while (idx < content.length && y + content[idx].th < 0) {
+					++idx;
+				}
+				
+				wgl.setProgram (prog);
+
+				while (idx < content.length && y < 1) {
+					let image = content[idx];
+
+					if (image.tex) {
+						drawImage (image.tex, 0, y, 1, image.th, 0, 0, 1, 1);
+						y += image.th;
+					}
+
+					++idx;
+				}
+
+				break;
+
+			default:
+				if (Math.abs (screen.slide - screen.slideDelta) < 0.0002) {
+					screen.slideDelta = screen.slide;
+				}
+				else screen.slideDelta += (screen.slide - screen.slideDelta) * 0.12;
+
+				var num = Math.floor (screen.slideDelta);
+				var offset = screen.slideDelta - num;
+
+				while (num < 0) {
+					num += pages.length;
+				}
+
+				num %= pages.length;
+				var page = pages[num];
+				wgl.setProgram (prog);
+				
+				if (page.tex) {
+					drawImage (page.tex, -offset, 0, 1, 1, page.tw, page.th, 1 - page.tw, 1 - page.th);
+				}
+
+				num = (num + 1) % pages.length;
+				page = pages[num];
+
+				if (page.tex) {
+					drawImage (page.tex, 1 - offset, 0, 1, 1, page.tw, page.th, 1 - page.tw, 1 - page.th);
+				}
+		}
+
+		requestAnimationFrame (update);
+	}
+
+	function layout () {
+		screen.w = elemFrame.clientWidth;
+		screen.h = elemFrame.clientHeight;
+		screen.aspect = screen.w / screen.h;
+		canvas.width = screen.w;
+		canvas.height = screen.h;
+		wgl.resize (screen.w, screen.h);
+		pages.forEach (pageSize);
+	}
+
+	function contentSize (content) {
+		if (content.tex) {
+			content.tw = 1;
+			content.th = content.h / content.w;
+		}
+	}
+
+	function contentLoaded () {
+		this.content.tex = wgl.createImageTexture (this);
+		this.content.w = this.width;
+		this.content.h = this.height;
+		this.content.alpha = 1;
+		contentSize (this.content);
+	}
+
+	function loadPageContent (page) {
+		page.content.forEach (function (content) {
+			if (!content.image) {
+				content.alpha = 0;
+				content.th = 0;
+				content.image = new Image ();
+				content.image.content = content;
+				content.image.onload = contentLoaded;
+				content.image.src = "images/" + page.name + "/" + content.src;
+			}
+		});
+	}
+
+	function pageSize (page) {
+		if (page.aspect) {
+			if (screen.aspect > page.aspect) {
+				page.tw = 1;
+				page.th = (1 - page.aspect / screen.aspect) * 0.5;
+			}
+			else {
+				page.tw = (1 - screen.aspect / page.aspect) * 0.5;
+				page.th = 1;
+			}
+		}
+	}
+
+	function pageLoaded () {
+		this.page.tex = wgl.createImageTexture (this);
+		this.page.w = this.width;
+		this.page.h = this.height;
+		this.page.aspect = this.width / this.height;
+		this.page.alpha = 1;
+		pageSize (this.page);
+	}
+
+	function loadPages () {
+		pages.forEach (function (page) {
+			page.alpha = 0;
+			page.image = new Image ();
+			page.image.page = page;
+			page.image.onload = pageLoaded;
+			page.image.src = "images/pages/" + page.name + ".png";
+		});
+	}
+
+	function mouseDown (event) {
+		switch (phase)
+		{
+			case 'page':
+				phase = 'slide';
+				break;
+
+			case 'content':
+				phase = 'scroll';
+				break;
+		}
+
+		slide.x = event.clientX;
+		slide.y = event.clientY;
+	}
+
+	function mouseMove (event) {
+		switch (phase) {
+			case 'slide':
+				screen.slide -= (event.clientX - slide.x) / screen.w;
+				break;
+
+			case 'scroll':
+				screen.scroll -= (event.clientY - slide.y) / screen.h;
+				if (screen.scroll < 0) screen.scroll = 0;
+				break;
+		}
+
+		slide.x = event.clientX;
+		slide.y = event.clientY;
+	}
+
+	function mouseUp (event) {
+		switch (phase) {
+			case 'slide':
+				let move = screen.slide - screen.slideDelta;
+
+				if (move > 0.1) {
+					screen.slide = Math.ceil (screen.slide);
+				}
+				else if (move < -0.1) {
+					screen.slide = Math.floor (screen.slide);
+				}
+				else {
+					move = screen.slideDelta - Math.floor (screen.slideDelta);
+
+					if (move > 0.5) {
+						screen.slide = Math.ceil (screen.slide);
+					}
+					else screen.slide = Math.floor (screen.slide);
+				}
+
+				phase = 'page';
+				break;
+
+			case 'scroll':
+				phase = 'content';
+				break;
+		}
+	}
+
+	function mouseClick (event) {
+		if (phase == 'page') {
+			var num = getScrollPage ();
+
+			if (Math.abs (screen.slideDelta - num) < 0.0002) {
+				screen.content = pages[num].content;
+				loadPageContent (pages[num]);
+				phase = 'content';
+			}
+		}
+	}
+
+	window.addEventListener ('resize', layout);
+
+	window.addEventListener ('DOMContentLoaded', function () {
+		elemFrame = document.getElementById ('frame');
+		canvas = document.getElementById ('canvas');
+		gl = canvas.getContext ('webgl');
+		wgl = new Wgl (gl);
+		prog = wgl.createProgram (vertShdr, fragShdr);
+		wgl.buildQuad ();
+		screen.slide = 0;
+		screen.slideDelta = 0;
+		screen.scroll = 0;
+		screen.scrollDelta = 0;
+		elemFrame.addEventListener ("click", mouseClick);
+		elemFrame.addEventListener ("mousemove", mouseMove);
+		elemFrame.addEventListener ("mouseup", mouseUp);
+		elemFrame.addEventListener ("mousedown", mouseDown);
+		//document.addEventListener ("mousewheel", mouseWheel, {passive: false});
+		//document.addEventListener ("click", whenClick);
+		loadPages ();
+		layout ();
+		update ();
+	});
+
+</script>
+
+</html>
