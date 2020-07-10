@@ -1,22 +1,6 @@
 
 function Wgl (gl) {
-	var vxbQuad;
-	var vxbStrip;
-
-	// just passes the position to the fragment shader
-	var defaultVertShdr = `
-		void main() {
-			gl_Position = vec4(position, 0, 1.0);
-		}
-	`;
-
-	// applies webglshader from source to target
-	this.applyShader = function (source, target, vertShdr, fragShdr, gl, uniforms) {
-		let prog = this.createProgram (vertShdr, fragShdr); 
-		this.setImageProcessingGeometry (prog);
-		this.setUniforms (prog, uniforms);
-		this.prepareSourceImage (source);
-	}
+	var prog;
 
 	this.resizeAndClear = function () {
 		gl.viewport (0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
@@ -40,7 +24,6 @@ function Wgl (gl) {
 	}
 		
 	this.createProgram = function (vertShdr, fragShdr) {
-		vertShdr = vertShdr || defaultVertShdr;
 		let vsh = createShader (vertShdr, gl.VERTEX_SHADER);
 		let fsh = createShader (fragShdr, gl.FRAGMENT_SHADER);
 		let prog = gl.createProgram ();
@@ -62,7 +45,8 @@ function Wgl (gl) {
 		gl.viewport (0, 0, w, h);
 	}
 	
-	this.setProgram = function (prog) {
+	this.setProgram = function (prgUse) {
+		prog = prgUse;
 		gl.useProgram (prog);
 	}
 
@@ -86,34 +70,39 @@ function Wgl (gl) {
 	}
 
 	// creates minimum geometry to use webgl
+
+	this.setBuffer = function (vxb, attr) {
+		gl.bindBuffer (gl.ARRAY_BUFFER, vxb);
+
+		Object.keys (attr).forEach (function (key) {
+			setAttribute (prog, attr[key].type, key);
+		});
+	}
+
 	this.buildQuad = function () {
 		let verts = new Float32Array ([
 			0, 0, 0, 1, 1, 1,
 			0, 0, 1, 1, 1, 0,
 		]);
 
-		vxbQuad = gl.createBuffer ();
-		gl.bindBuffer (gl.ARRAY_BUFFER, vxbQuad);
+		let vxb = gl.createBuffer ();
+		gl.bindBuffer (gl.ARRAY_BUFFER, vxb);
 		gl.bufferData (gl.ARRAY_BUFFER, verts, gl.STATIC_DRAW);
+		return vxb;
 	}
 
-	this.drawQuad = function () {
-		gl.bindBuffer (gl.ARRAY_BUFFER, vxbQuad);
-		setAttribute (prog, gl.FLOAT_VEC2, 'position');
-		gl.drawArrays (gl.TRIANGLES, 0, 6);
-	}
-
-	this.buildStrip = function (num) {
-		let step = 1 / num;
-		let verts = new Float32Array ();
+	this.buildStrip = function (num, eval) {
+		let verts = new Float32Array (num << 2);
 
 		for (var idx = 0; idx < num; ++idx) {
-			verts.push (0, step * idx, 1, step * idx);
+			var p = eval (idx);
+			verts.set (p, idx << 2);
 		}
 
-		vxbStrip = gl.createBuffer ();
-		gl.bindBuffer (gl.ARRAY_BUFFER, vxbStrip);
+		let vxb = gl.createBuffer ();
+		gl.bindBuffer (gl.ARRAY_BUFFER, vxb);
 		gl.bufferData (gl.ARRAY_BUFFER, verts, gl.STATIC_DRAW);
+		return vxb;
 	}
 
 	this.drawStrip = function (num) {
@@ -122,11 +111,24 @@ function Wgl (gl) {
 		gl.drawArrays (gl.TRIANGLE_STRIP, 0, num << 1);
 	}
 
+	function isPowerOfTwo (x) {
+		return (x & (x - 1)) == 0;
+	}
+
 	this.createImageTexture = function (image) {
 		let tex = gl.createTexture ();
 		gl.bindTexture (gl.TEXTURE_2D, tex);
-		gl.texParameteri (gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-		gl.texParameteri (gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+		if (isPowerOfTwo (image.width)) {
+			gl.texParameteri (gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+		}
+		else gl.texParameteri (gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+
+		if (isPowerOfTwo (image.height)) {
+			gl.texParameteri (gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
+		}
+		else gl.texParameteri (gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
 		gl.texParameteri (gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
 		gl.texParameteri (gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 		gl.texImage2D (gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
@@ -171,4 +173,7 @@ function Wgl (gl) {
 			setUniform (prog, uniforms[key].type, key, uniforms[key].value);
 		});
 	}
+
+	gl.disable (gl.DEPTH_TEST);
+	gl.disable (gl.CULL_FACE);
 }

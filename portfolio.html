@@ -12,7 +12,7 @@
  </head>
 
 <body class='fill'>
-	<div id='frame' class='fill'>
+	<div id='frame' class='fill' style='touch-action: none'>
 		<canvas id='canvas' class='fill'></canvas>
 		<div class='designer_name'>KAYAKO KOBAYASHI</div>
 		<div class='about'>ABOUT</div>
@@ -48,36 +48,52 @@
 			{src: "designkk_kayako_kobayashi_ralphlauren02.png"},
 			{src: "designkk_kayako_kobayashi_rlmagazine01.png"}, 
 		]},
-		{name: "ecommerce", number: "02", label: "E.COMM"},
-		{name: "agency", number: "03", label: "AGENCY"},
-		{name: "jewellry", number: "04", label: "JEWELLRY"},
-		{name: "beauty", number: "05", label: "BEAUTY"},
-		{name: "ux", number: "06", label: "UX"},
+		{name: "ecommerce", number: "02", label: "E.COMM", content: [
+			{src: "designkk_kayako_kobayashi_coach01.png"},
+			{src: "designkk_kayako_kobayashi_coach02.png"},
+			{src: "designkk_kayako_kobayashi_coach03.png"},
+			{src: "designkk_kayako_kobayashi_joefresh02.png"},
+			{src: "designkk_kayako_kobayashi_nancygonzalez-fall03.png"},
+			{src: "designkk_kayako_kobayashi_joefresh_ecommerce02.png"},
+			{src: "designkk_kayako_kobayashi_joefresh_ecommerce03.png"},
+			{src: "designkk_kayako_kobayashi_joefresh01.png"},
+			{src: "designkk_kayako_kobayashi_isaacmizrahi05.png"},
+			{src: "designkk_kayako_kobayashi_isaacmizrahi06copy.png"},
+			{src: "designkk_kayako_kobayashi_culturehome02.png"},
+			{src: "designkk_kayako_kobayashi_colehaan01.png"},
+			{src: "designkk_kayako_kobayashi_assouline01.png"},
+			{src: "designkk_kayako_kobayashi_joefresh04.png"},
+			{src: "designkk_kayako_kobayashi_ripka.png"},
+			{src: "designkk_ecommerce.png"},
+			{src: "designkk_kayako_kobayashi_katespade01.png"},
+		]},
+		{name: "agency", number: "03", label: "AGENCY", content: [
+			{src: "halo_home.png"},
+		]},
+		{name: "jewellry", number: "04", label: "JEWELLRY", content: [
+			{src: "Judithripka.png"},
+			{src: "ripka_insta01.png"},
+			{src: "designkk_kayako_kobayashi_peridotfinejewelry01.png"},
+			{src: "ripka_insta02.png"},
+			{src: "designkk_kayako_kobayashi_peridotfinejewelry02.png"},
+			{src: "ripka_insta03.png"},
+			{src: "designkk_kayako_kobayashi_ripka.png"},
+		]},
+		{name: "beauty", number: "05", label: "BEAUTY", content: [
+			{src: "designkk_kayako_kobayashi_elementx04.png"},
+			{src: "kiehls_banner.png"},
+			{src: "designkk_kayako_kobayashi_isaacmizrahi_truebeauty02.png"},
+			{src: "origins_banner.png"},
+			{src: "Canvas.png"},
+			{src: "designkk_kayako_kobayashi_kiehls06.png"},
+			{src: "origins.png"},
+		]},
+		{name: "ux", number: "06", label: "UX", content: [,
+			{src: "kathykuo_ux.png"},
+		]},
 	];
 
-	var content = [
-		[
-			{id: "ecommerce_image_1_1", src: "designkk_kayako_kobayashi_coach01.png"}, 
-			{id: "ecommerce_image_2_1", src: "designkk_kayako_kobayashi_coach02.png"}, 
-			{id: "ecommerce_image_2_2", src: "designkk_kayako_kobayashi_coach03.png"}, 
-			{id: "ecommerce_image_3_1", src: "designkk_kayako_kobayashi_joefresh02.png"}, 
-			{id: "ecommerce_image_4_1", src: "designkk_kayako_kobayashi_nancygonzalez-fall03.png"}, 
-			{id: "ecommerce_image_5_1", src: "designkk_kayako_kobayashi_joefresh_ecommerce02.png"}, 
-			{id: "ecommerce_image_6_1", src: "designkk_kayako_kobayashi_joefresh_ecommerce03.png"}, 
-			{id: "ecommerce_image_6_2", src: "designkk_kayako_kobayashi_joefresh01.png"}, 
-			{id: "ecommerce_image_7_1", src: "designkk_kayako_kobayashi_isaacmizrahi05.png"}, 
-			{id: "ecommerce_image_7_2", src: "designkk_kayako_kobayashi_isaacmizrahi06copy.png"}, 
-			{id: "ecommerce_image_8_1", src: "designkk_kayako_kobayashi_culturehome02.png"}, 
-			{id: "ecommerce_image_9_1", src: "designkk_kayako_kobayashi_colehaan01.png"}, 
-			{id: "ecommerce_image_9_2", src: "designkk_kayako_kobayashi_assouline01.png"}, 
-			{id: "ecommerce_image_9_3", src: "designkk_kayako_kobayashi_joefresh04.png"}, 
-			{id: "ecommerce_image_10_1", src: "designkk_kayako_kobayashi_ripka.png"}, 
-			{id: "ecommerce_image_11_1", src: "designkk_ecommerce.png"}, 
-			{id: "ecommerce_image_12_1", src: "designkk_kayako_kobayashi_katespade01.png"}, 
-		],
-	];
-
-	const vertShdr = `
+	const vshdrImage = `
 		attribute vec2 position;
 
 		uniform vec2 org;
@@ -95,18 +111,38 @@
 		}
 	`;
 
-	const fragShdr = `
+	const fshdrImage = `
 		precision highp float;
-		varying vec2 tex;
 
 		uniform sampler2D diffuse;
 
-		uniform float aspect;
-		uniform float time;	
+		varying vec2 tex;
 
 		void main () {
 			vec2 uv = tex;
 			vec4 color = texture2D (diffuse, uv);
+			gl_FragColor = color;
+		}
+	`;
+
+	const vshdrGeom = `
+		attribute vec2 position;
+		attribute vec2 uv;
+
+		uniform vec2 projOrg;
+		uniform vec2 projSize;
+		
+		void main () {
+			vec2 pos = (position + projOrg) * projSize;
+			gl_Position = vec4 (pos, 0, 1.0);
+		}
+	`;
+
+	const fshdrGeom = `
+		precision highp float;
+
+		void main () {
+			vec4 color = vec4 (1.0);
 			gl_FragColor = color;
 		}
 	`;
@@ -116,61 +152,87 @@
 	var gl;
 	var wgl;
 	var screen;
-	var prog;
+	var prgImage;
+	var prgGeom;
+	var vxbQuad;
+	var vxbClock;
+	var imgClock;
 	var idxPage = 0;
 	var phase = 'page';
 	var slide = {dx: 0, dy: 0};
+	var numLoad = 0;
+	var whenLoad;
 
 	function drawImage (tex, x, y, w, h, tx, ty, tw, th) {
-		wgl.setUniforms (prog, {
+		wgl.setUniforms (prgImage, {
 			org: {type: gl.FLOAT_VEC2, value: [x, y]},
 			size: {type: gl.FLOAT_VEC2, value: [w, h]},
-			texOrg: {type: gl.FLOAT_VEC2, value: [tx, th]},
-			texSize: {type: gl.FLOAT_VEC2, value: [tw - tx, ty - th]},
+			texOrg: {type: gl.FLOAT_VEC2, value: [tx, ty]},
+			texSize: {type: gl.FLOAT_VEC2, value: [tw - tx, th - ty]},
 			diffuse: {type: gl.TEXTURE0, value: tex},
 		});
 
-		wgl.drawQuad ();
+		gl.drawArrays (gl.TRIANGLES, 0, 66);
 	}
 
-	function getScrollPage () {
-		var num = Math.floor (screen.slideDelta);
-
-		while (num < 0) {
-			num += pages.length;
+	function getSlidePage (where) {
+		while (where < 0) {
+			where += screen.slideWidth;
 		}
 
-		return num % pages.length;
+		where %= screen.slideWidth;
+		let num = 0;
+
+		while (where > pages[num].tw) {
+			where -= pages[num].tw;
+			++num;
+		}
+		
+		return num;
 	}
 
 	function update () {
+		wgl.setProgram (prgImage);
+		wgl.setBuffer (vxbQuad, {position: {type: gl.FLOAT_VEC2}});
+
 		switch (phase) {
 			case 'content':
 			case 'scroll':
-				if (Math.abs (screen.scroll - screen.scrollDelta) < 0.0002) {
-					screen.scrollDelta = screen.scroll;
+				screen.scroll -= screen.push[0];
+				
+				if (phase == 'scroll') {
+					screen.push.pop ();
+					screen.push.unshift (0);
 				}
-				else screen.scrollDelta += (screen.scroll - screen.scrollDelta) * 0.12;
 
-				var y = -screen.scrollDelta;
+				if (screen.scroll < 0) {
+					screen.scroll = 0;
+				}
+				else if (screen.scroll > screen.scrollHeight - 1) {
+					screen.scroll = screen.scrollHeight - 1;
+				}
+
 				var content = screen.content;
 				var idx = 0;
 
-				while (idx < content.length && y + content[idx].th < 0) {
+				while (idx < content.length && content[idx].ty + content[idx].th < screen.scroll) {
 					++idx;
 				}
-				
-				wgl.setProgram (prog);
 
-				while (idx < content.length && y < 1) {
+				while (idx < content.length && content[idx].ty < screen.scroll + 1) {
 					let image = content[idx];
 
 					if (image.tex) {
-						drawImage (image.tex, 0, y, 1, image.th, 0, 0, 1, 1);
-						y += image.th;
+						drawImage (image.tex, image.tx, image.ty - screen.scroll, image.tw, image.th, 0, 0, 1, 1);
 					}
 
 					++idx;
+				}
+
+				screen.push[0] *= 0.97;
+
+				if (Math.abs (screen.push[0]) < 0.0002) {
+					screen.push[0] = 0;
 				}
 
 				break;
@@ -179,32 +241,59 @@
 				if (Math.abs (screen.slide - screen.slideDelta) < 0.0002) {
 					screen.slideDelta = screen.slide;
 				}
-				else screen.slideDelta += (screen.slide - screen.slideDelta) * 0.12;
+				else screen.slideDelta += (screen.slide - screen.slideDelta) * 0.1;
 
-				var num = Math.floor (screen.slideDelta);
-				var offset = screen.slideDelta - num;
+				var x = screen.slideDelta;
 
-				while (num < 0) {
-					num += pages.length;
+				while (x < 0) {
+					x += screen.slideWidth;
 				}
 
-				num %= pages.length;
-				var page = pages[num];
-				wgl.setProgram (prog);
-				
-				if (page.tex) {
-					drawImage (page.tex, -offset, 0, 1, 1, page.tw, page.th, 1 - page.tw, 1 - page.th);
+				x %= screen.slideWidth;
+				let num = 0;
+
+				while (x + 1 < pages[num].tx) {
+					++num;
 				}
 
-				num = (num + 1) % pages.length;
-				page = pages[num];
+				x = pages[num].tx - x;
 
-				if (page.tex) {
-					drawImage (page.tex, 1 - offset, 0, 1, 1, page.tw, page.th, 1 - page.tw, 1 - page.th);
+				while (x < 1) {
+					var page = pages[num];
+
+					if (page.tex) {
+						drawImage (page.tex, x, page.ty, page.tw, page.th, 0, 0, 1, 1);
+						x += page.tw;
+					}
+
+					num = (num + 1) % pages.length;
 				}
 		}
 
+		wgl.setProgram (prgGeom);
+		wgl.setUniforms (prgGeom, {
+			projOrg: {type: gl.FLOAT_VEC2, value: [0, 0]},
+			projSize: {type: gl.FLOAT_VEC2, value: [2 / screen.w, 2 / screen.h]},
+		});
+
+		wgl.setBuffer (vxbClock, {
+			position: {type: gl.FLOAT_VEC2},
+			uv: {type: gl.FLOAT_VEC2},
+		});
+		
+		gl.drawArrays (gl.TRIANGLE_STRIP, 0, 66);
 		requestAnimationFrame (update);
+	}
+
+	function layoutPages () {
+		screen.slideWidth = 0;
+		
+		pages.forEach (function (page) {
+			pageSize (page);
+			page.ty = 0.5 + page.th * -0.5;
+			page.tx = screen.slideWidth;
+			screen.slideWidth += page.tw;
+		});
 	}
 
 	function layout () {
@@ -214,13 +303,30 @@
 		canvas.width = screen.w;
 		canvas.height = screen.h;
 		wgl.resize (screen.w, screen.h);
-		pages.forEach (pageSize);
+		layoutPages ();
+	}
+
+	function onLoad ()
+	{
+		--numLoad;
+
+		if (!numLoad) {
+			whenLoad ();
+		}
 	}
 
 	function contentSize (content) {
-		if (content.tex) {
-			content.tw = 1;
-			content.th = content.h / content.w;
+		let y = content[0].ty + content[0].th;
+
+		for (var idx = 1; idx < content.length; ++idx) {
+			var image = content[idx];
+			
+			if (image.tex) {
+				image.tw = 1;
+				image.th = image.h / image.w * screen.aspect;
+				image.ty = y;
+				y += image.th;
+			}
 		}
 	}
 
@@ -228,31 +334,33 @@
 		this.content.tex = wgl.createImageTexture (this);
 		this.content.w = this.width;
 		this.content.h = this.height;
-		this.content.alpha = 1;
-		contentSize (this.content);
+		onLoad ();
 	}
 
 	function loadPageContent (page) {
+		numLoad += page.content.length;
+
 		page.content.forEach (function (content) {
-			if (!content.image) {
-				content.alpha = 0;
-				content.th = 0;
-				content.image = new Image ();
-				content.image.content = content;
-				content.image.onload = contentLoaded;
-				content.image.src = "images/" + page.name + "/" + content.src;
-			}
+			content.alpha = 0;
+			content.tx = 0;
+			content.th = 0;
+			content.image = new Image ();
+			content.image.content = content;
+			content.image.onload = contentLoaded;
+			content.image.src = "images/" + page.name + "/" + content.src;
 		});
+
+		page.content.unshift ({tex: page.tex, tx: (page.tw - 1) * -0.5, ty: page.ty, tw: page.tw, th: page.th});
 	}
 
 	function pageSize (page) {
 		if (page.aspect) {
 			if (screen.aspect > page.aspect) {
 				page.tw = 1;
-				page.th = (1 - page.aspect / screen.aspect) * 0.5;
+				page.th = screen.aspect / page.aspect;
 			}
 			else {
-				page.tw = (1 - screen.aspect / page.aspect) * 0.5;
+				page.tw = page.aspect / screen.aspect;
 				page.th = 1;
 			}
 		}
@@ -263,11 +371,12 @@
 		this.page.w = this.width;
 		this.page.h = this.height;
 		this.page.aspect = this.width / this.height;
-		this.page.alpha = 1;
-		pageSize (this.page);
+		onLoad ();
 	}
 
 	function loadPages () {
+		numLoad += pages.length;
+
 		pages.forEach (function (page) {
 			page.alpha = 0;
 			page.image = new Image ();
@@ -277,75 +386,102 @@
 		});
 	}
 
+	function imageLoaded () {
+		this.tex = wgl.createImageTexture (this);
+		onLoad ();
+	}
+
+	function loadImage (src) {
+		++numLoad;
+		let image = new Image ();
+		image.onload = imageLoaded;
+		image.src = "images/" + src;
+		return image;
+	}
+
 	function mouseDown (event) {
-		switch (phase)
-		{
-			case 'page':
-				phase = 'slide';
-				break;
+		if (event.isPrimary) {
+			switch (phase)
+			{
+				case 'page':
+					phase = 'slide';
+					break;
 
-			case 'content':
-				phase = 'scroll';
-				break;
+				case 'content':
+					phase = 'scroll';
+					screen.push = [0, 0, 0, 0, 0];
+					break;
+			}
+
+			slide.x = event.clientX;
+			slide.y = event.clientY;
 		}
-
-		slide.x = event.clientX;
-		slide.y = event.clientY;
 	}
 
 	function mouseMove (event) {
-		switch (phase) {
-			case 'slide':
-				screen.slide -= (event.clientX - slide.x) / screen.w;
-				break;
+		if (event.isPrimary) {
+			switch (phase) {
+				case 'slide':
+					screen.slide -= (event.clientX - slide.x) / screen.w;
+					break;
 
-			case 'scroll':
-				screen.scroll -= (event.clientY - slide.y) / screen.h;
-				if (screen.scroll < 0) screen.scroll = 0;
-				break;
+				case 'scroll':
+					screen.push[0] = ((event.clientY - slide.y) / screen.h) * 2;
+					break;
+			}
+
+			slide.x = event.clientX;
+			slide.y = event.clientY;
 		}
-
-		slide.x = event.clientX;
-		slide.y = event.clientY;
 	}
 
 	function mouseUp (event) {
-		switch (phase) {
-			case 'slide':
-				let move = screen.slide - screen.slideDelta;
+		if (event.isPrimary) {
+			switch (phase) {
+				case 'slide':
+					let move = screen.slide - screen.slideDelta;
 
-				if (move > 0.1) {
-					screen.slide = Math.ceil (screen.slide);
-				}
-				else if (move < -0.1) {
-					screen.slide = Math.floor (screen.slide);
-				}
-				else {
-					move = screen.slideDelta - Math.floor (screen.slideDelta);
-
-					if (move > 0.5) {
-						screen.slide = Math.ceil (screen.slide);
+					if (move > 0.1) {
+						idxPage = getSlidePage (screen.slide) + 1;
+						idxPage %= pages.length;
 					}
-					else screen.slide = Math.floor (screen.slide);
-				}
+					else if (move < -0.1) {
+						idxPage = getSlidePage (screen.slide);
+					}
+					else idxPage = getSlidePage (screen.slide + 0.5);;
 
-				phase = 'page';
-				break;
+					screen.slide = pages[idxPage].tx + (pages[idxPage].tw * 0.5) - 0.5;
+					phase = 'page';
+					break;
 
-			case 'scroll':
-				phase = 'content';
-				break;
+				case 'scroll':
+					screen.push[0] = screen.push.reduce (function (sum, value) {
+						return sum + value;
+					}, 0) / screen.push.length;
+					phase = 'content';
+					break;
+			}
 		}
 	}
 
 	function mouseClick (event) {
 		if (phase == 'page') {
-			var num = getScrollPage ();
+			if (Math.abs (screen.slide - screen.slideDelta) < 0.002) {
+				var content = pages[idxPage].content;
+				screen.content = content;
+				
+				whenLoad = function () {
+					contentSize (content);
+					screen.scrollHeight = 0;
 
-			if (Math.abs (screen.slideDelta - num) < 0.0002) {
-				screen.content = pages[num].content;
-				loadPageContent (pages[num]);
-				phase = 'content';
+					content.forEach (function (image) {
+						screen.scrollHeight += image.th;
+					});
+
+					phase = 'content';
+				};
+
+				loadPageContent (pages[idxPage]);
 			}
 		}
 	}
@@ -357,21 +493,41 @@
 		canvas = document.getElementById ('canvas');
 		gl = canvas.getContext ('webgl');
 		wgl = new Wgl (gl);
-		prog = wgl.createProgram (vertShdr, fragShdr);
-		wgl.buildQuad ();
-		screen.slide = 0;
-		screen.slideDelta = 0;
+		prgImage = wgl.createProgram (vshdrImage, fshdrImage);
+		prgGeom = wgl.createProgram (vshdrGeom, fshdrGeom);
+		vxbQuad = wgl.buildQuad ();
+
+		vxbClock = wgl.buildStrip (33, function (num) {
+			var angle = (Math.PI / 16) * num;
+
+			return [
+				Math.sin (angle) * 40, Math.cos (angle) * 40,
+				Math.sin (angle) * 43, Math.cos (angle) * 43,
+			];
+		});
+
+		screen.slide = 0.5;
+		screen.slideDelta = 0.5;
+		screen.slideWidth = 1;
 		screen.scroll = 0;
-		screen.scrollDelta = 0;
+		screen.push = [0, 0, 0, 0, 0];
 		elemFrame.addEventListener ("click", mouseClick);
-		elemFrame.addEventListener ("mousemove", mouseMove);
-		elemFrame.addEventListener ("mouseup", mouseUp);
-		elemFrame.addEventListener ("mousedown", mouseDown);
+		elemFrame.addEventListener ("pointermove", mouseMove);
+		elemFrame.addEventListener ("pointerup", mouseUp);
+		elemFrame.addEventListener ("pointercancel", mouseUp);
+		elemFrame.addEventListener ("pointerdown", mouseDown);
 		//document.addEventListener ("mousewheel", mouseWheel, {passive: false});
 		//document.addEventListener ("click", whenClick);
+
+		whenLoad = function () {
+			layout ();
+			screen.slide = (pages[0].tw * 0.5) - 0.5;
+			screen.slideDelta = screen.slide;
+			update ();
+		};
+
 		loadPages ();
-		layout ();
-		update ();
+		imgClock = loadImage ("clock.png");
 	});
 
 </script>
