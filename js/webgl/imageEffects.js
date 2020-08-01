@@ -46,6 +46,7 @@ Site.wordRotation = 0;
 
 Site.bannerCamera = { x: 0, y: 0 };
 Site.bannerFolder = "resources/images/topbanner/";
+
 Site.bannerImages = [ 
 	{ src: "top_banner_1.png", number: "01", label: "EDITORIAL", contentId: "editorial-content" }, 
 	{ src: "top_banner_2.png", number: "02", label: "E.COMM", contentId: "ecommerce-content" }, 
@@ -90,12 +91,36 @@ Site.loop = function(timestamp){
 	this.requestLoop();
 }
 
-Site.mouseOnNextImagePreview = function(){
-	return this.mousePosition.x > this.offscreenCanvas.width * 0.95;
-}
 
+
+
+Site.mouseOnNextImagePreview = function(){
+
+	viewportwidth = document.getElementsByTagName('body')[0].clientWidth;
+		
+	 
+	if (viewportwidth < 600) {
+			dividermobilepreviewright = 1;
+		} else {
+			dividermobilepreviewright = 0.97;
+		}
+
+	return this.mousePosition.x > this.offscreenCanvas.width * dividermobilepreviewright; /*change this from 0.97 to 1 when on mobile*/ 
+}
 Site.mouseOnPreviousImagePreview = function(){
-	return this.mousePosition.x < this.offscreenCanvas.width * 0.05;
+
+	viewportwidth = document.getElementsByTagName('body')[0].clientWidth;
+
+	if (viewportwidth < 600) {
+		
+			dividermobilepreviewleft = 0;
+		}
+		else {
+			dividermobilepreviewleft = 0.03;
+		}
+
+
+	return this.mousePosition.x < this.offscreenCanvas.width * dividermobilepreviewleft; /*change this from 0.03 to 0 when on mobile*/
 }
 
 // calculate animation for when holding the mouse on the sides of the screen
@@ -158,6 +183,7 @@ Site.initializeBanner = function(){
 
 Site.getCanvasWidth = function(){
 	return this.offscreenCanvas.width;
+	
 }
 
 Site.initializeImagePositions = function(){
@@ -174,8 +200,27 @@ Site.getImageIndex = function(bimg){
 }
 
 Site.centerImage = function(centerImage){
+
 	let centerIndex = this.getImageIndex(centerImage);
-	let half = Math.floor(this.bannerImages.length / 2);
+
+	// // changes text in canvas based on screen width
+	let divider; 
+
+	switch (viewportwidth > 600) {
+		case false: {
+			let divider = 10;
+			break;
+		}
+		case true: {
+			let divider = 2;
+		break;
+		}
+		default: 
+			console.log('resolution could not be detected')
+			break;
+	}
+
+	let half = Math.floor(this.bannerImages.length / divider); /*sets banner image size. 2 for desktop, 10 is good for onload on mobile*/
 
 	let centerx = centerImage.x;
 	const canvasWidth = this.getCanvasWidth();
@@ -563,14 +608,34 @@ Site.calculateImagePositions = function(){
 	this.centerImage(image);
 }
 
-Site.getWordCircleRadius = function() {
-	return this.getCanvasWidth() * 0.8;
+viewportwidth = document.getElementsByTagName('body')[0].clientWidth;
+
+
+let dividercircleradius = 0.8;
+window.onload = function(){ 
+document.querySelector("#top-banner-canvas").onclick = function() {circleRadiusAdjust()};
+function circleRadiusAdjust() {
+	dividercircleradius = 10;
+  }
+//   const id = setInterval(frame, 10);
+//   function frame() {
+//   if (dividercircleradius = 0.8) {
+// 	clearInterval(id);
+//   } else {
+// 	dividercircleradius++; 
+// 	elem.style.value = dividercircleradius + '%'; 
+//   }
+// }
 }
+
+let wordRadius = Site.getWordCircleRadius = function() {
+	return this.getCanvasWidth() * dividercircleradius; /* this needs to change from 0.8 to 10 when user clicks on the center. function needs to have a transition period, indicates how wound up the text */
+} 
 
 Site.calculateWordRotation = function() {
 	for (var i = 0; i < this.bannerImages.length; i++){
 		let bimg = this.bannerImages[i];
-		bimg.angle = this.wordRotationOffset + (bimg.x + this.bannerCamera.x) / (1.7 * this.getWordCircleRadius());
+		bimg.angle = this.wordRotationOffset + (bimg.x + this.bannerCamera.x) / (0.7 * this.getWordCircleRadius()); // 0.7 is the amount of rotation
 	}
 }
 
@@ -626,7 +691,6 @@ Site.advanceTimeline = function(t){
 	// todo: convert t to an appropiate unit system
 	this.currentContent.timeline.addAnimationTime(t);
 }
-
 Site.onclick = function(event){
 	let image;
 	switch (this.state){
@@ -634,6 +698,7 @@ Site.onclick = function(event){
 			switch (this.bannerState){
 				case this.BannerStateEnum.STEADY:
 					image = this.calculateCurrentImage();
+
 					this.transitionToContent(image);
 					break;
 				case this.BannerStateEnum.IMAGE_PREVIEW:
@@ -651,10 +716,15 @@ Site.onclick = function(event){
 }
 
 Site.transitionToContent = function(bimg){
-	// position canvas
+	// position canvas  
 	this.bannerCamera.x = -bimg.x;
 
-	document.getElementById(bimg.contentId).style.display = "block";
+	const canvasstyle = document.getElementById("top-banner-canvas");
+	canvasstyle.setAttribute("style", "object-position: -20% -100px; transition: all 0.7s ease-out;");
+
+	const displaystyle = document.getElementById(bimg.contentId);
+	displaystyle.setAttribute("style", "display: block; margin-top: -100px; position: relative; background: white;");
+
 	this.state = this.StateEnum.CONTENT_SCREEN;
 	this.currentContent = bimg;
 }
@@ -663,7 +733,8 @@ Site.checkAndTransitionToFront = function(event){
 	if (this.state == this.StateEnum.CONTENT_SCREEN){
 		this.transitionToFront();
 	}
-
+	const canvasstyle = document.getElementById("top-banner-canvas");
+	canvasstyle.setAttribute("style", "object-position: 0; transition: all 0.7s ease-out;");
 	event.stopPropagation();
 }
 
@@ -676,14 +747,15 @@ Site.setEvents = function(){
     document.addEventListener("mousemove", (event) => this.onmousemove(event));
     document.addEventListener("mouseup", (event) => this.onmouseup(event));
     document.addEventListener("mousedown", (event) => this.onmousedown(event));
-
 	document.addEventListener("mousewheel", (event) => this.onmousewheel(event), {passive: false});
-
-    document.addEventListener("click", (event) => this.onclick(event));
+	document.addEventListener("click", (event) => this.onclick(event));
+	
 
 	//document.addEventListener("keydown", (event) => this.onkeydown(event));
     //document.addEventListener("keyup", (event) => this.onkeyup(event));
 }
+
+
 
 Site.loadBannerImages = function(){
 	let promises = [];
@@ -741,11 +813,25 @@ Site.getBannerWords = function(){
 
 Site.drawSectionNames = function(context){
 	// draw rounded word
+
+	
 	context.save();
-	let fontSize = context.canvas.height / 5;
+
+// changes text in canvas based on screen width
+	viewportwidth = document.getElementsByTagName('body')[0].clientWidth;
+		
+	if (viewportwidth < 600) {
+			dividerfont = 10;
+		}else {
+			dividerfont = 5;
+		}
+
+	let fontSize = context.canvas.height / dividerfont; //this needs to change from 5 to 10 on mobile
+	
 	context.font = fontSize + "px PlayfairDisplay";	
 	context.textAlign = "center";
 	context.textBaseline = "top";
+	
 
 	let currentImage = this.calculateCurrentImage();
 	let currentIndex = this.getImageIndex(currentImage);
@@ -758,7 +844,7 @@ Site.drawSectionNames = function(context){
 		context.fillCircleText(word, context.canvas.width / 2, 
 			context.canvas.height * 0.45 + radius, radius, bimg.angle, undefined, false);
 	}
-
+	
 	fontSize = Math.min(context.canvas.height * 0.1, 80);
 	context.font = fontSize + "px PlayfairDisplayItalic";	
 	context.textBaseline = "bottom";
@@ -767,6 +853,7 @@ Site.drawSectionNames = function(context){
 		let index = (currentIndex + i + this.bannerImages.length) % this.bannerImages.length;
 		let bimg = this.bannerImages[index];
 		let word = bimg.number;
+		
 		let radius = this.getWordCircleRadius();
 		context.fillCircleText(word, context.canvas.width / 2, 
 			context.canvas.height * 0.45 + radius, radius, bimg.angle, undefined, false);
@@ -799,7 +886,7 @@ Site.loadData();
     var measure = function(ctx, text, radius){        
         var textWidth = ctx.measureText(text).width; // get the width of all the text
         return {
-            width               : textWidth,
+            width               : textWidth ,
             angularWidth        : (1 / radius) * textWidth,
             pixelAngularSize    : 1 / radius
         };
@@ -907,5 +994,7 @@ Site.loadData();
     // set the prototypes
     CanvasRenderingContext2D.prototype.fillCircleText = fillCircleText;
     CanvasRenderingContext2D.prototype.strokeCircleText = strokeCircleText;
-    CanvasRenderingContext2D.prototype.measureCircleText = measureCircleTextExt;  
+	CanvasRenderingContext2D.prototype.measureCircleText = measureCircleTextExt;
+	  
 })();
+
