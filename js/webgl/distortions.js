@@ -1,4 +1,7 @@
+<<<<<<< HEAD
 
+=======
+>>>>>>> responsive
 var Distortion = function(){
 	this.x = Math.random();
 	this.y = Math.random();
@@ -7,4 +10,7 @@ var Distortion = function(){
 	this.intensity = Math.random();
 	this.enabled = 1;
 }
+<<<<<<< HEAD
 
+=======
+>>>>>>> responsive
