@@ -53,26 +53,26 @@
             <canvas id="top-banner-canvas">
             
             </canvas>
-            <div class="designer-name" onclick="Site.checkAndTransitionToFront(event)">
+            <div class="designer-name" onclick="Site.checkAndTransitionToFront(); scrollToTop()">
                 KAYAKO KOBAYASHI
             </div>
-            <div class="return-close-button" onclick="Site.checkAndTransitionToFront(event)">
+            <div class="return-close-button" onclick="Site.checkAndTransitionToFront(event); scrollToTop()">
                 <span></span>
                 <span></span>
             </div>
-            <div class="navigation" onclick="Site.checkAndTransitionToFront(event)" >
+            <div class="navigation" >
                 <div id="menuToggle">
                 <input type="checkbox" />
                 <span class="nav-span"></span>
                 <span class="nav-span"></span>
                 <span class="nav-span"></span>
                 <ul id="menu">
-                    <div id="editorial-page" onclick="editorialPageOpen()">EDITORIAL</div>
-                    <div id="ecomm-page" onclick="ecommPageOpen()">E.COMM</div>
-                    <div id="agency-page" onclick="agencyPageOpen()">AGENCY</div>
-                    <div id="jewelry-page" onclick="jewelryPageOpen()">JEWELRY</div>
-                    <div id="beauty-page" onclick="beautyPageOpen()">BEAUTY</div></a>
-                    <div id="ux-page" onclick="uxPageOpen()">UX</div></a>
+                    <div id="editorial-page" onclick="editorialPageOpen(); scrollToTop()">EDITORIAL</div>
+                    <div id="ecomm-page" onclick="ecommPageOpen(); scrollToTop()">E.COMM</div>
+                    <div id="agency-page" onclick="agencyPageOpen(); scrollToTop()">AGENCY</div>
+                    <div id="jewelry-page" onclick="jewelryPageOpen(); scrollToTop()">JEWELRY</div>
+                    <div id="beauty-page" onclick="beautyPageOpen(); scrollToTop()">BEAUTY</div></a>
+                    <div id="ux-page" onclick="uxPageOpen(); scrollToTop()">UX</div></a>
                     <span></span>
                     <div id="about-page" onclick="aboutPageOpen()">ABOUT</div>
                 </ul>

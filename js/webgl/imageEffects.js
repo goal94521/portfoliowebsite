@@ -750,7 +750,6 @@ Site.setEvents = function(){
 	document.addEventListener("mousewheel", (event) => this.onmousewheel(event), {passive: false});
 	document.addEventListener("click", (event) => this.onclick(event));
 	
-
 	//document.addEventListener("keydown", (event) => this.onkeydown(event));
     //document.addEventListener("keyup", (event) => this.onkeyup(event));
 }
