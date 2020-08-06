@@ -36,8 +36,9 @@
         </div>
 
     </div>
+
     <script type="text/javascript" src="js/preloader.js"></script>
-    
+
     <!-- GSAP link -->
     <script type="text/javascript" src="js/libs/gsap.min.js"> </script>
 
@@ -51,66 +52,13 @@
 
         <div class="top-banner">
             <canvas id="top-banner-canvas">
-            
+                
             </canvas>
-            <div class="designer-name" onclick="Site.checkAndTransitionToFront(); scrollToTop()">
+            <div class="designer-name" onclick="Site.checkAndTransitionToFront(event)">
                 KAYAKO KOBAYASHI
             </div>
-            <div class="return-close-button" onclick="Site.checkAndTransitionToFront(event); scrollToTop()">
-                <span></span>
-                <span></span>
-            </div>
-            <div class="navigation" >
-                <div id="menuToggle">
-                <input type="checkbox" />
-                <span class="nav-span"></span>
-                <span class="nav-span"></span>
-                <span class="nav-span"></span>
-                <ul id="menu">
-                    <div id="editorial-page" onclick="editorialPageOpen(); scrollToTop()">EDITORIAL</div>
-                    <div id="ecomm-page" onclick="ecommPageOpen(); scrollToTop()">E.COMM</div>
-                    <div id="agency-page" onclick="agencyPageOpen(); scrollToTop()">AGENCY</div>
-                    <div id="jewelry-page" onclick="jewelryPageOpen(); scrollToTop()">JEWELRY</div>
-                    <div id="beauty-page" onclick="beautyPageOpen(); scrollToTop()">BEAUTY</div></a>
-                    <div id="ux-page" onclick="uxPageOpen(); scrollToTop()">UX</div></a>
-                    <span></span>
-                    <div id="about-page" onclick="aboutPageOpen()">ABOUT</div>
-                </ul>
-                </div>
-            </div>
-        
-            <div class="about" onclick="aboutPageOpen(); Site.checkAndTransitionToFront(event)">
-                    ABOUT
-                    <div class="about-image">
-                    <img src="resources/images/mail-icon.png">
-                    </div>
-                </div>
-            </div>
-            <div id="about-page-content">
-                <div class="about-page-background"></div>
-                <div class="info-grid">
-
-                    <div class="instagram-icon">
-                        <img src="resources/images/instagram-icon.png">
-                    </div>
-                    <div class="email-icon">
-                        <img src="resources/images/mail-icon-full.png">
-                    </div>
-                </div>
-                <div class="close-button" onclick="aboutPageClose(); Site.checkAndTransitionToFront(event)">
-                    <span></span>
-                    <span></span>
-                </div>
-                <div class="about-text">
-                    <div class="about-title">
-                        hello
-                    </div>
-                    <div class="about-paragraph">
-                        I am a digital Creative Director based in New York City with a passion for thoughtful design, inspired by the unique characteristics of each project. With my work I strive to communicate clearly using visual details, compelling stories and intuitive user interface. I was born in Tokyo, raised in Japan and the US, and educated in London.
-                        <br><br>
-                        If you are interested in my work, please feel free to contact me at <b>k@designkk.com</b> I will be glad to know more about you and your project.
-                    </div>
-                </div>
+            <div class="about">
+                ABOUT
             </div>
 
             <div class="stage-marker-container">
@@ -130,70 +78,69 @@
                 </div>
             </div>
         </div>
-        <div class="smooth-scroll-wrapper">
-        <section>
+
         <!-- EDITORIAL SECTION -->
         <div id="editorial-content" class="content-page" style="display: none;">
             
             <div class="content-row">
                 <div class="half-width-image image-container">
-                    <img id="editorial_image_1_1" src="resources/images/editorial/designkk_kayako_kobayashi_aesthete03.png" />                
+                    <img id="editorial_image_1_1" style="transform: translateY(500px);" />                
                 </div>
                 <div class="half-width-image image-container">
-                    <img id="editorial_image_1_2" src="resources/images/editorial/designkk_kayako_kobayashi_aesthete08.png" />
+                    <img id="editorial_image_1_2" style="transform: translateY(800px);" />
                 </div>
             </div>
             <div class="content-row">
                 <div class="half-width-image image-container">
-                    <img id="editorial_image_2_1" src="resources/images/editorial/designkk_kayako_kobayashi_aesthete06.png" />
+                    <img id="editorial_image_2_1" style="transform: translateY(800px);" />
                 </div>
                 <div class="half-width-image image-container">
-                    <img id="editorial_image_2_2" src="resources/images/editorial/designkk_kayako_kobayashi_aesthete05.png" />           
+                    <img id="editorial_image_2_2" style="transform: translateY(600px);" />           
                 </div>                
             </div>
             
             <div class="content-row">
                 <div class="half-width-image image-container">
-                    <img src="resources/images/editorial/designkk_kayako_kobayashi_aesthete09.png" />
+                    <img id="editorial_image_3_1" />
                 </div>
                 <div class="half-width-image image-container">               
-                    <img src="resources/images/editorial/designkk_kayako_kobayashi_aesthete02.png" />
+                    <img id="editorial_image_3_2" />
                 </div>
             </div>          
 
             <div class="content-row">
-                <div class="full-width-image mobile-nospacing image-container">
-                    <img src="resources/images/editorial/designkk_kayako_kobayashi_aesthete01@2x.png" />                
+                <div class="full-width-image image-container">
+                    <img id="editorial_image_4_1" />                
                 </div>
             </div>
 
             <div class="content-row two-columns">
-                <div class="column full-width-on-mobile image-container">
-                    <img class="full-width-image" src="resources/images/editorial/aesthete01.png" />                
+                <div class="column image-container">
+                    <img id="editorial_image_5_1" class="full-width-image" />                
                 </div>
-                <div class="column full-width-on-mobile image-container">
-                    <img class="full-width-image" src="resources/images/editorial/aesthete-1.png" />                                    
-                </div>
-            </div>
-
-            <div class="content-row">
-                <div class="centered full-width-image image-container">
-                    <img src="resources/images/editorial/CkSHIf_UkAAPBYe.png" />                
+                <div class="column image-container">
+                    <img id="editorial_image_5_2" class="full-width-image" />                                    
                 </div>
             </div>
 
             <div class="content-row">
-                <div class="half-width-image full-width-on-mobile mobile-nospacing image-container">
-                    <img src="resources/images/editorial/designkk_kayako_kobayashi_ralphlauren01.png" />
+                <div class="centered image-container">
+                    <img id="editorial_image_6_1" />                
                 </div>
-                <div class="half-width-image full-width-on-mobile mobile-nospacing image-container">               
-                    <img src="resources/images/editorial/designkk_kayako_kobayashi_ralphlauren02.png" />
+            </div>
+
+            <div class="content-row">
+                <div class="half-width-image image-container">
+                    <img id="editorial_image_7_1" />
+                </div>
+                <div class="half-width-image image-container">               
+                    <img id="editorial_image_7_2" />
                 </div>
             </div>          
 
             <div class="content-row">
-                <div class="full-width-image mobile-nospacing image-container">
-                    <img src="resources/images/editorial/designkk_kayako_kobayashi_rlmagazine01.png" />                
+                <div class="full-width-image image-container">
+                    <img id="editorial_image_8_1" />                
                 </div>
             </div>
             
@@ -201,138 +148,136 @@
 
         <!-- E-COMMERCE SECTION -->
         <div id="ecommerce-content" style="display: none;">
-            
             <div class="content-row">
-                <div class="full-width-image mobile-nospacing image-container">
-                    <img id="ecommerce_image_1_1" src="resources/images/ecommerce/designkk_kayako_kobayashi_coach01.png" />
+                <div class="full-width-image image-container">
+                    <img id="ecommerce_image_1_1" />
                 </div>              
             </div>
 
            <div class="content-row">
                 <div class="half-width-image image-container">
-                    <img src="resources/images/ecommerce/designkk_kayako_kobayashi_coach02.png" />
+                    <img id="ecommerce_image_2_1" />
                 </div>
                 <div class="half-width-image image-container">               
-                    <img src="resources/images/ecommerce/designkk_kayako_kobayashi_coach03.png" />
+                    <img id="ecommerce_image_2_2" />
                 </div>
             </div>          
 
             <div class="content-row">
-                <div class="centered full-width-image mobile-nospacing image-container">
-                    <img src="resources/images/ecommerce/designkk_kayako_kobayashi_joefresh02.png" />                
+                <div class="centered image-container">
+                    <img id="ecommerce_image_3_1" />                
                 </div>
             </div>
 
             <div class="content-row">
-                <div class="centered full-width-image mobile-nospacing image-container">
-                    <img src="resources/images/ecommerce/designkk_kayako_kobayashi_nancygonzalez-fall03.png" />                
+                <div class="centered image-container">
+                    <img id="ecommerce_image_4_1" />                
                 </div>
             </div>
 
             <div class="content-row">
-                <div class="centered full-width-image mobile-nospacing image-container">
-                    <img src="resources/images/ecommerce/designkk_kayako_kobayashi_joefresh_ecommerce02.png" />                
+                <div class="centered image-container">
+                    <img id="ecommerce_image_5_1" />                
                 </div>
             </div>
 
             <div class="content-row">
                 <div class="half-width-image image-container">
-                    <img id="" src="resources/images/ecommerce/designkk_kayako_kobayashi_joefresh_ecommerce03.png" />
+                    <img id="ecommerce_image_6_1" />
                 </div>
                 <div class="half-width-image image-container">               
-                    <img src="resources/images/ecommerce/designkk_kayako_kobayashi_joefresh01.png" />
+                    <img id="ecommerce_image_6_2" />
                 </div>
             </div>          
 
             <div class="content-row">
                 <div class="half-width-image image-container">
-                    <img src="resources/images/ecommerce/designkk_kayako_kobayashi_isaacmizrahi05.png" />
+                    <img id="ecommerce_image_7_1" />
                 </div>
                 <div class="half-width-image image-container">               
-                    <img src="resources/images/ecommerce/designkk_kayako_kobayashi_isaacmizrahi06 copy.png" />
+                    <img id="ecommerce_image_7_2" />
                 </div>
             </div>          
 
             <div class="content-row">
-                <div class="centered full-width-image image-container">
-                    <img src="resources/images/ecommerce/designkk_kayako_kobayashi_culturehome02.png" />                
+                <div class="centered image-container">
+                    <img id="ecommerce_image_8_1" />                
                 </div>
             </div>
 
             <div class="content-row two-columns">
-                <div class="column image-container full-width-on-mobile">
+                <div class="column image-container">
                     <div class="full-width-image">
-                        <img src="resources/images/ecommerce/designkk_kayako_kobayashi_joefresh04.png" />                                    
+                        <img id="ecommerce_image_9_1" />                                    
+                    </div>
+                    <div class="full-width-image">
+                        <img id="ecommerce_image_9_2" />                                    
+                    </div>
+                </div>
+                <div class="column image-container">
+                    <div class="full-width-image">
+                        <img id="ecommerce_image_9_3" />                                    
                     </div>            
                 </div>
-                <div class="column image-container full-width-on-mobile">
-                    <div class="full-width-image ">
-                        <img src="resources/images/ecommerce/designkk_kayako_kobayashi_colehaan01.png" />                                    
-                    </div>
-                    <div class="full-width-image">
-                        <img src="resources/images/ecommerce/designkk_kayako_kobayashi_assouline01.png" />                                    
-                    </div>
+            </div>
+
+            <div class="content-row">
+                <div class="centered image-container">
+                    <img id="ecommerce_image_10_1" />                
                 </div>
             </div>
 
             <div class="content-row">
-                <div class="centered full-width-image image-container full-width-on-mobile">
-                    <img src="resources/images/ecommerce/designkk_kayako_kobayashi_ripka.png" />                
+                <div class="centered image-container">
+                    <img id="ecommerce_image_11_1" />                
                 </div>
             </div>
 
             <div class="content-row">
-                <div class="centered full-width-image image-container full-width-on-mobile">
-                    <img src="resources/images/ecommerce/designkk_ecommerce.png" />                
+                <div class="centered image-container">
+                    <img img id="ecommerce_image_12_1" />                
                 </div>
             </div>
-
-            <div class="content-row">
-                <div class="centered full-width-image image-container full-width-on-mobile">
-                    <img src="resources/images/ecommerce/designkk_kayako_kobayashi_katespade01.png" />                
-                </div>
-            </div>
-            
         </div>
 
         <!-- AGENCY SECTION -->
         <div id="agency-content" style="display: none;">
-            
+            <!--
             <div class="content-row">
-                <div class="centered full-width-image image-container agency-image">
+                <div class="centered image-container">
                     <img src="resources/images/agency/halo_home.png" />                
                 </div>
             </div>
-            
+            -->
         </div>
 
         <!-- JEWELRY SECTION -->
         <div id="jewelry-content" style="display: none;">
-            
+            <!--
             <div class="content-row">
-                <div class="centered image-container centered full-width-image">
+                <div class="centered image-container">
                     <img src="resources/images/jewelry/Judithripka.png" />                
                 </div>
             </div>
 
             <div class="content-row two-columns">
-                <div class="column image-container full-width-on-mobile mobile-nospacing">
-                    <div class="full-width-image mobile-nospacing">
+                <div class="column image-container">
+                    <div class="full-width-image">
                         <img src="resources/images/jewelry/designkk_kayako_kobayashi_ripka.png" />                                    
                     </div>
-                    <div class="column image-container full-width-on-mobile">
-                        <div class="half-width-image full-width-on-mobile mobile-nospacing">
+                    <div>
+                        <div class="half-width-image">
                             <img src="resources/images/jewelry/ripka_insta03.png" />                                                            
                         </div>
-                        <div class="half-width-image full-width-on-mobile mobile-nospacing">
+                        <div class="half-width-image">
                             <img src="resources/images/jewelry/ripka_insta02.png" />                                                                                        
                         </div>
                     </div>
-                    <div class="full-width-image full-width-on-mobile mobile-nospacing">
+                    <div class="full-width-image">
                         <img src="resources/images/jewelry/designkk_kayako_kobayashi_peridotfinejewelry02.png" />                                    
                     </div>
                 </div>
-                <div class="column image-container full-width-on-mobile">
+                <div class="column image-container">
                     <div class="full-width-image">
                         <img src="resources/images/jewelry/ripka_insta01.png" />                                    
                     </div>
@@ -343,59 +288,59 @@
 
                 </div>
             </div>
-                            
+            -->                   
         </div>
 
         <!-- BEAUTY SECTION -->
         <div id="beauty-content" style="display: none;">
-            
+            <!--
             <div class="content-row">
-                <div class="centered image-container full-width-image">
+                <div class="centered image-container">
                     <img src="resources/images/beauty/Canvas.png" />                
                 </div>
             </div>
 
             <div class="content-row">
-                <div class="centered image-container full-width-image">
+                <div class="centered image-container">
                     <img src="resources/images/beauty/designkk_kayako_kobayashi_elementx04.png" />                
                 </div>
             </div>
 
             <div class="content-row">
-                <div class="centered image-container full-width-image">
+                <div class="centered image-container">
                     <img src="resources/images/beauty/designkk_kayako_kobayashi_isaacmizrahi_truebeauty02.png" />                
                 </div>
             </div>
 
             <div class="content-row">
-                <div class="centered image-container full-width-image">
+                <div class="centered image-container">
                     <img src="resources/images/beauty/kiehls_banner.png" />                
                 </div>
             </div>
 
             <div class="content-row">
-                <div class="centered image-container full-width-image">
+                <div class="centered image-container">
                     <img src="resources/images/beauty/designkk_kayako_kobayashi_kiehls06.png" />                
                 </div>
             </div>
 
             <div class="content-row">
-                <div class="centered image-container full-width-image">
+                <div class="centered image-container">
                     <img src="resources/images/beauty/origins_banner.png" />                
                 </div>
             </div>
 
             <div class="content-row">
-                <div class="centered image-container full-width-image">
+                <div class="centered image-container">
                     <img src="resources/images/beauty/origins.png" />                
                 </div>
             </div>
-            
+            -->
         </div>
 
         <!-- UX SECTION -->
         <div id="ux-content" style="display: none;">
-            
+            <!--
             <div class="centered">
                 <div class="left-aligned ux-text-container">
                     <span class="ux-large-text">e.comm-based interior design store</span>                
@@ -405,24 +350,23 @@
             <div class="centered ux-small-text">
                 <div class="left-aligned ux-text-container">
                     <ul>
-                        <div>New Navigation</div>
-                        <div>New wholesale vendors & guests site that is easy to understand to all users.</div>
-                        <div>Create a site that allows the user (mainly Interior Designers) to draft, design, shop, filter, and present through wish list which can be shared with their client as “concept” without the wholesale price and technical details. It also simultaneously links to 3D Virtual Interior Design App</div>
+                        <li>New Navigation</li>
+                        <li>New wholesale vendors & guests site that is easy to understand to all users.</li>
+                        <li>Create a site that allows the user (mainly Interior Designers) to draft, design, shop, filter, and present through wish list which can be shared with their client as “concept” without the wholesale price and technical details. It also simultaneously links to 3D Virtual Interior Design App</li>
                     </ul>
                 </div>
             </div>
 
             <div class="content-row">
-                <div class="centered image-container full-width-image">
+                <div class="centered image-container">
                     <img src="resources/images/ux/kathykuo_ux.png" />                
                 </div>
             </div>
 
+            -->
         </div>
-        </section>
-        </div>
+
     </div>
-    <script type="text/javascript" src="js/main.js"></script>
 </body>
 
 </html>
