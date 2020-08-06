@@ -188,7 +188,7 @@ function agencyPageOpen() {
 
  function uxPageOpen() {
     document.querySelectorAll('#ux-content').forEach(item => {
-        item.style.cssText = "";
+        item.style.cssText = "display: block; margin-top: -100px; position: relative;";
     });
     document.querySelectorAll('#ecommerce-content, #editorial-content, #agency-content, #jewelry-content, #beauty-content, #about-content').forEach(item => {
         item.style.display = "none"; 
@@ -207,11 +207,3 @@ function agencyPageOpen() {
     // Site.transitionToContent(event)
     Site.snapBannerToImage(Site.bannerImages[0]);
  }
-
- function scrollToTop() { 
-    window.scrollTo(0, 0); 
-
-    document.querySelectorAll('#ecommerce-content, #editorial-content, #agency-content, #jewelry-content, #ux-content, #about-content, #beauty-content').forEach(item => {
-        item.style.display = "none"; 
-    });
-} 
